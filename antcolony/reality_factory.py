@@ -14,8 +14,20 @@ class RealityFactory(object):
 
 
 if __name__=='__main__':
-    from pprint import pprint
+    #from pprint import pprint
     reality = RealityFactory.create_reality(0, 1, 20, 2)
-    pprint(reality)
+    #pprint(reality)
 
+    #edgelist = [(edge.a_end, edge.b_end, {'weight': edge.cost}) for edge in reality.world.edges]
+    #from vizualizer import Vizualizer
+    #Vizualizer.draw_edges(edgelist)
+
+    #pprint(reality.world.to_json())
+    import json
+    json.dump(reality.world.to_json(), open('world-1.json', 'w'))
+
+    json_world = json.load(open('world-1.json', 'r'))
+    from world import World
+    w = World.from_json(json_world)
+    print w
 
