@@ -1,6 +1,7 @@
 from environment import EnvironmentParameters
 from world_generator_factory import SlightlyRandomizedWorldGeneratorFactory
 from reality import Reality
+from world import World
 
 class RealityFactory(object):
     @classmethod
@@ -11,23 +12,14 @@ class RealityFactory(object):
         anthill = world.get_anthill()
         environment_parameters = EnvironmentParameters(min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, anthill)
         return Reality(world, environment_parameters)
-
+    @classmethod
+    def from_json_world(cls, json_world, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant):
+        w = World.from_json(json_world)
+        environment_parameters = EnvironmentParameters.from_world(w, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant)
+        return Reality(w, environment_parameters)
 
 if __name__=='__main__':
-    #from pprint import pprint
+    from pprint import pprint
     reality = RealityFactory.create_reality(0, 1, 20, 2)
-    #pprint(reality)
-
-    #edgelist = [(edge.a_end, edge.b_end, {'weight': edge.cost}) for edge in reality.world.edges]
-    #from vizualizer import Vizualizer
-    #Vizualizer.draw_edges(edgelist)
-
-    #pprint(reality.world.to_json())
-    import json
-    json.dump(reality.world.to_json(), open('world-1.json', 'w'))
-
-    json_world = json.load(open('world-1.json', 'r'))
-    from world import World
-    w = World.from_json(json_world)
-    print w
+    pprint(reality)
 
