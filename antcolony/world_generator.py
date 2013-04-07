@@ -8,6 +8,6 @@ class SimpleWorldGenerator(object):
         self.edge_generator = edge_generator
     def generate(self):
         points = set(self.point_generator.generate_all(self.number_of_points))
-        edges = set(self.edge_generator.generate_all(points))
+        edges = set(self.edge_generator.generate_and_register(points))
         return World(points, edges)
 

@@ -12,3 +12,9 @@ class QueenCombinedPerformance(object):
 class QueenEvaluator(object):
     pass
 
+class BasicQueen(object):
+    def __init__(self, ant_class):
+        self.ant_class = ant_class
+    def spawn_ants(self, amount_of_ants):
+        return [self.ant_class] * amount_of_ants
+

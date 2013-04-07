@@ -4,7 +4,12 @@ from edge import Edge
 # NOTE: classes of this module use chain inheritance
 
 class AbstractEdgeGenerator(object):
-    def generate_all(self, points):
+    def generate_and_register(self, points):
+        edges = self._generate_all(points)
+        for edge in edges:
+            edge.register_with_points()
+            yield edge
+    def _generate_all(self, points):
         for source_point in points:
             for target_point in points:
                 if source_point == target_point:
@@ -27,7 +32,7 @@ class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
         return base + random_coefficient
 
 class LimitedRandomCoefficientEdgeGenerator(RandomCoefficientEdgeGenerator):
-    def generate_all(self, points):
+    def _generate_all(self, points):
         min_hint_edges_from_point = 2
         max_hint_edges_from_point = 4
         existing_edges = set()

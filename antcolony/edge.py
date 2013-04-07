@@ -1,24 +1,53 @@
+class AbstractEdgeEnd(object):
+    def drop_pheromone(self, amount):
+        raise NotImplementedError()
+
+class EdgeEnd(AbstractEdgeEnd):
+    def __init__(self, edge, point, pheromone_level):
+        self.edge = edge
+        self.point = point
+        self.pheromone_level = pheromone_level
+    def drop_pheromone(self, amount):
+        self.pheromone_level += amount
+    def __repr__(self):
+        return ''
+
+class DummyEdgeEnd(AbstractEdgeEnd):
+    def __init__(self, point):
+        self.point = point
+    def drop_pheromone(self, amount):
+        pass
+
 class Edge(object):
     JSON_KEY_ENDPOINTS = 'endpoints'
     JSON_KEY_COST = 'cost'
     def __init__(self, point_A, point_B, cost):
-        self.a_end, self.b_end = sorted([point_A, point_B])
+        a_point, b_point = sorted([point_A, point_B])
+        assert a_point!=b_point
+        self.a_end = EdgeEnd(self, a_point, 0)
+        self.b_end = EdgeEnd(self, b_point, 0)
         self.cost = cost
-        self.pheromone_on_a_end = 0
-        self.pheromone_on_b_end = 0
     def __eq__(self, other):
-        if self.a_end!=other.a_end:
+        if self.a_end.point!=other.a_end.point:
             return False
-        return self.b_end==other.b_end
+        return self.b_end.point==other.b_end.point
     def __hash__(self):
-        return hash((self.a_end, self.b_end))
-    def __repr__(self):
-        return 'Edge{%s <[%s]--[%s]> %s (%s)}' % (self.a_end, self.pheromone_on_a_end, self.pheromone_on_b_end, self.b_end, self.cost)
+        return hash((self.a_end.point, self.b_end.point))
+    #def __repr__(self):
+    #    return 'Edge{%s <[%s]--[%s]> %s (%s)}' % (self.a_end.point, self.a_end.pheromone_level, self.b_end.pheromone_level, self.b_end.point, self.cost)
+    def get_other_end(self, end):
+        if end.point==self.a_end.point:
+            return self.b_end
+        else:
+            return self.a_end
+    def register_with_points(self):
+        for end in self.a_end, self.b_end:
+            end.point.add_edge_end(end)
     def to_json(self):
         return {
             self.JSON_KEY_ENDPOINTS: (
-                self.a_end.coordinates,
-                self.b_end.coordinates,
+                self.a_end.point.coordinates,
+                self.b_end.point.coordinates,
             ),
             self.JSON_KEY_COST: self.cost,
         }
