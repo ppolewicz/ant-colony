@@ -93,9 +93,9 @@ class Simulation(object):
 #pprint(reality.world.to_json())
 
 world_dir = 'worlds'
-#for x in xrange(20):
-#    reality = RealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_points=30, number_of_dimensions=2)
-#    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
+for x in xrange(20):
+    reality = RealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_points=30, number_of_dimensions=2)
+    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
 
 #import sys
 #sys.exit(0)
@@ -120,8 +120,8 @@ for file_ in sorted(os.listdir(world_dir)):
     #Vizualizer.draw_edges(edgelist)
 
     #print file_, s.run(queen, amount_of_ants)
-    for amount_of_ants in [1, 20, 400]:
-        results = [s.run(queen, amount_of_ants) for i in xrange(100)]
+    for amount_of_ants in [1, 20, 50]:
+        results = [s.run(queen, amount_of_ants) for i in xrange(10)]
         elapsed = avg([elapsed for (elapsed, ticks) in results])
         ticks = avg([ticks for (elapsed, ticks) in results])
         print file_, amount_of_ants, elapsed, ticks
