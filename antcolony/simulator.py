@@ -94,7 +94,7 @@ class Simulation(object):
 
 world_dir = 'worlds'
 #for x in xrange(20):
-#    reality = RealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_points=20, number_of_dimensions=2)
+#    reality = RealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_points=30, number_of_dimensions=2)
 #    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
 
 #import sys
