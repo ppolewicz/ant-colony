@@ -13,7 +13,7 @@ class AbstractPointGenerator(object):
         result_coordinates[anthill.coordinates] = anthill
         yield anthill
 
-        foodpoint = FoodPoint(self.generate_coordinates(), 15)
+        foodpoint = FoodPoint(self.generate_coordinates(), 1500)
         result_coordinates[foodpoint.coordinates] = foodpoint
         yield foodpoint
 
