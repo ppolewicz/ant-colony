@@ -7,9 +7,16 @@ class AbstractPointGenerator(object):
     def generate_all(self, number_of_points):
         """ generator """
         assert number_of_points >= 2, 'number_of_points needs to be at least 2 to allow for anthill and food'
-        yield AnthillPoint(self.generate_coordinates())
-        yield FoodPoint(self.generate_coordinates(), 15)
         result_coordinates = {}
+
+        anthill = AnthillPoint(self.generate_coordinates())
+        result_coordinates[anthill.coordinates] = anthill
+        yield anthill
+
+        foodpoint = FoodPoint(self.generate_coordinates(), 15)
+        result_coordinates[foodpoint.coordinates] = foodpoint
+        yield foodpoint
+
         while len(result_coordinates) < number_of_points-2:
             coordinates = self.generate_coordinates()
             if coordinates not in result_coordinates:

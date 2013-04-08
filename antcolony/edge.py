@@ -25,7 +25,7 @@ class Edge(object):
     JSON_KEY_COST = 'cost'
     def __init__(self, point_A, point_B, cost):
         a_point, b_point = sorted([point_A, point_B])
-        assert a_point!=b_point
+        assert a_point!=b_point, a_point
         self.a_end = EdgeEnd(self, a_point, 0)
         self.b_end = EdgeEnd(self, b_point, 0)
         self.cost = cost
