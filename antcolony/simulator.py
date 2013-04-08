@@ -25,18 +25,24 @@ class AbstractAntMove(object):
         elif self.destination.point.is_anthill() and self.ant.food:
             self.destination.point.food += self.ant.food
             new_ant = self.ant.__class__(self.ant.world_parameters)
-            return AntStartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point))
+            return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=world.elapsed_time)
         new_destination = new_destination_edge.get_other_end(self.destination)
         end_time = world.elapsed_time + new_destination_edge.cost
         return AntMove(ant=self.ant, origin=self.destination, destination=new_destination, end_time=end_time, pheromone_to_drop=pheromone_to_drop)
     def __cmp__(self, other):
         return self.end_time - other.end_time
+    def __repr__(self):
+        return '%s@%s' % (self.__class__.__name__, self.end_time,)
 
-class AntStartMove(AbstractAntMove):
-    def __init__(self, ant, anthill):
-        super(AntStartMove, self).__init__(ant, None, anthill, 0, 0)
+class AntRestartMove(AbstractAntMove):
+    def __init__(self, ant, anthill, end_time):
+        super(AntRestartMove, self).__init__(ant, None, anthill, end_time=end_time, pheromone_to_drop=0)
     def process_start(self):
         pass
+
+class AntStartMove(AntRestartMove):
+    def __init__(self, ant, anthill):
+        super(AntStartMove, self).__init__(ant, anthill, end_time=0)
 
 class AntMove(AbstractAntMove):
     pass
@@ -64,10 +70,12 @@ class Simulation(object):
             counter += 1
     def tick(self, antmoves):
         ant_move = heapq.heappop(antmoves)
+        self.reality.world.elapsed_time = ant_move.end_time # simulation is now at the point of ant_move.ant arriving at ant_move.destination
+        #print 'processing ant_move', ant_move.end_time
         #print '[%f] %s is moving to %s, %s' % (self.reality.world.elapsed_time, ant_move.ant, ant_move.destination.point, ant_move.ant.food)
         #print sum([food_point.food for food_point in self.reality.world.get_food_points()])
         new_antmove = ant_move.process_end(self.reality.world)
-        self.reality.world.elapsed_time = ant_move.end_time
+        assert not self.reality.world.elapsed_time > ant_move.end_time
         new_antmove.process_start()
         heapq.heappush(antmoves, new_antmove)
         return antmoves
