@@ -9,6 +9,8 @@ class EdgeEnd(AbstractEdgeEnd):
         self.pheromone_level = pheromone_level
     def drop_pheromone(self, amount):
         self.pheromone_level += amount
+    def reset(self):
+        self.pheromone_level = 0
     def __repr__(self):
         return ''
 
@@ -43,6 +45,9 @@ class Edge(object):
     def register_with_points(self):
         for end in self.a_end, self.b_end:
             end.point.add_edge_end(end)
+    def reset(self):
+        for end in self.a_end, self.b_end:
+            end.reset()
     def to_json(self):
         return {
             self.JSON_KEY_ENDPOINTS: (

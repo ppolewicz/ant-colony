@@ -12,6 +12,7 @@ class World(object):
         self.points = points
         self.edges = edges
         self.elapsed_time = 0.0
+        self.initial_food = [(point, point.food) for point in self.get_food_points()]
     def is_resolved(self):
         return not self.get_food_points()
     def get_anthills(self):
@@ -26,6 +27,12 @@ class World(object):
         return [point for point in self.points if not point.is_anthill() and not point.food > 0]
     def __repr__(self):
         return 'World (%f):\n    ' % self.elapsed_time + '\n    '.join(map(str, self.edges))
+    def reset(self):
+        for edge in self.edges:
+            edge.reset()
+        for point, food in self.initial_food:
+            point.food = food
+        self.elapsed_time = 0.0
     def to_json(self):
         points = {}
         points[self.JSON_KEY_ANTHILL_POINTS] = [anthill.to_json() for anthill in self.get_anthills()]

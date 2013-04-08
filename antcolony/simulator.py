@@ -58,7 +58,9 @@ class Simulation(object):
         heapq.heapify(antmoves)
         while not self.reality.is_resolved():
             antmoves = self.tick(antmoves)
-        return self.reality.world.elapsed_time
+        elapsed_time = self.reality.world.elapsed_time
+        self.reality.world.reset()
+        return elapsed_time
     def get_start_antmoves(self, ants, anthills):
         """ iterator """
         counter = 0
@@ -95,6 +97,8 @@ world_dir = 'worlds'
 
 #import sys
 #sys.exit(0)
+def avg(iterable):
+    return sum(iterable) / len(iterable)
 
 for file_ in sorted(os.listdir(world_dir)):
 #for file_ in ['world-12.json']:
@@ -113,6 +117,9 @@ for file_ in sorted(os.listdir(world_dir)):
     #from vizualizer import Vizualizer
     #Vizualizer.draw_edges(edgelist)
 
-    print file_, s.run(queen, amount_of_ants)
+    #print file_, s.run(queen, amount_of_ants)
+    for amount_of_ants in [1, 20, 400]:
+        a = avg([s.run(queen, amount_of_ants) for i in xrange(100)])
+        print file_, amount_of_ants, a
 
 
