@@ -56,11 +56,13 @@ class Simulation(object):
         anthills = reality.world.get_anthills()
         antmoves = list(self.get_start_antmoves(ants, anthills))
         heapq.heapify(antmoves)
+        ticks = 0
         while not self.reality.is_resolved():
             antmoves = self.tick(antmoves)
+            ticks += 1
         elapsed_time = self.reality.world.elapsed_time
         self.reality.world.reset()
-        return elapsed_time
+        return elapsed_time, ticks
     def get_start_antmoves(self, ants, anthills):
         """ iterator """
         counter = 0
@@ -119,7 +121,9 @@ for file_ in sorted(os.listdir(world_dir)):
 
     #print file_, s.run(queen, amount_of_ants)
     for amount_of_ants in [1, 20, 400]:
-        a = avg([s.run(queen, amount_of_ants) for i in xrange(100)])
-        print file_, amount_of_ants, a
+        results = [s.run(queen, amount_of_ants) for i in xrange(100)]
+        elapsed = avg([elapsed for (elapsed, ticks) in results])
+        ticks = avg([ticks for (elapsed, ticks) in results])
+        print file_, amount_of_ants, elapsed, ticks
 
 
