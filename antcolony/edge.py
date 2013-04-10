@@ -42,6 +42,11 @@ class Edge(object):
             return self.b_end
         else:
             return self.a_end
+    def get_other_end_by_point(self, point):
+        if point==self.a_end.point:
+            return self.b_end
+        else:
+            return self.a_end
     def register_with_points(self):
         for end in self.a_end, self.b_end:
             end.point.add_edge_end(end)
