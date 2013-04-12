@@ -1,25 +1,43 @@
 from environment import EnvironmentParameters
-from world_generator_factory import SlightlyRandomizedWorldGeneratorFactory
+from world_generator_factory import SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, ChessboardWorldGeneratorFactory
 from reality import Reality
 from world import World
 
-class RealityFactory(object):
+class JsonRealityDeserializer(object):
     @classmethod
-    def create_reality(cls, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, number_of_points, number_of_dimensions):
-        #generator = SimpleWorldGeneratorFactory.create_world_generator(number_of_points, number_of_dimensions)
-        generator = SlightlyRandomizedWorldGeneratorFactory.create_world_generator(number_of_points, number_of_dimensions)
+    def from_json_world(cls, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, json_world):
+        world = World.from_json(json_world)
+        environment_parameters = EnvironmentParameters.from_world(world, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant)
+        return Reality(world, environment_parameters)
+
+class AbstractRealityFactory(object):
+    @classmethod
+    def create_reality(cls, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, number_of_dimensions, *args, **kwargs):
+        generator = cls.get_generator(number_of_dimensions, *args, **kwargs)
         world = generator.generate()
         anthill = world.get_anthill()
         environment_parameters = EnvironmentParameters(min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, anthill)
         return Reality(world, environment_parameters)
+
+class SimpleRealityFactory(AbstractRealityFactory):
     @classmethod
-    def from_json_world(cls, json_world, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant):
-        w = World.from_json(json_world)
-        environment_parameters = EnvironmentParameters.from_world(w, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant)
-        return Reality(w, environment_parameters)
+    def get_generator(cls, number_of_dimensions, number_of_points):
+        return SimpleWorldGeneratorFactory.create_world_generator(number_of_dimensions, number_of_points)
+
+class SlightlyRandomizedRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, number_of_points):
+        return SlightlyRandomizedWorldGeneratorFactory.create_world_generator(number_of_dimensions, number_of_points)
+
+class ChessboardRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, width):
+        return ChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
 
 if __name__=='__main__':
     from pprint import pprint
-    reality = RealityFactory.create_reality(0, 1, 20, 2)
+    #reality = SlightlyRandomizedRealityFactory.create_reality(0, 1, 2, 20)
+    reality = ChessboardRealityFactory.create_reality(0, 1, 2, 10)
     pprint(reality)
+    print len(reality.world.points), len(reality.world.edges)
 

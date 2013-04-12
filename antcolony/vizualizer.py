@@ -1,10 +1,66 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+#print plt.cm._cmapnames; exit()
 
 class Vizualizer(object):
     @classmethod
-    def draw_edges(cls, edgelist):
-        g = nx.Graph(edgelist)
-        nx.draw(g)
+    def render_reality(cls, reality):
+        return cls.render_world(reality.world)
+    @classmethod
+    def render_world(cls, world):
+        g = nx.Graph()
+        g.add_nodes_from(world.points)
+
+        edgelist = [
+            #(edge.a_end.point, edge.b_end.point, edge.cost+random.randint(1, 10))
+            #(edge.a_end.point, edge.b_end.point, {'weight': edge.cost*10})
+            (edge.a_end.point, edge.b_end.point, min(edge.pheromone_sum()/2, 1))
+            for edge in world.edges
+        ]
+        g.add_weighted_edges_from(edgelist)
+
+        fig = plt.figure()
+        normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.has_food()}
+        nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w')
+
+        food_points = {point: point.coordinates for point in world.get_food_points()}
+        nx.draw_networkx_nodes(g, pos=food_points, nodelist=food_points.keys(), node_color='g', label='food')
+
+        anthills = {point: point.coordinates for point in world.get_anthills()}
+        nx.draw_networkx_nodes(g, pos=anthills, nodelist=anthills.keys(), node_color='b', label='anthill')
+
+        all_points = {point: point.coordinates for point in world.points}
+        #edge_cmap = plt.cm.jet
+        edge_cmap = plt.cm.winter_r
+        nx.draw_networkx_edges(g, pos=all_points, edge_color=[c for a,b,c in edgelist], width=4, edge_cmap=edge_cmap, edge_vmin=0, edge_vmax=15)
+        #plt.sci(nodes)
+        plt.colorbar()
+        #,width=2,edge_cmap=plt.cm.Jet,with_labels=Tru
+        #nx.draw(g)
+        from matplotlib import animation
+        import random
+        def animate(arg):
+            nx.draw_networkx_edges(g, pos=all_points, edge_color=[random.randint(1, 10) for a,b,c in edgelist], width=4, edge_cmap=edge_cmap, edge_vmin=0, edge_vmax=15)
+            print 'animate'
+            return []
+        #def init():
+        #    print 'init'
+        #, init_func=init
+        #anim = animation.ArtistAnimation(fig, animate('1'))
+        anim = animation.FuncAnimation(fig, animate, frames=20, interval=20, blit=True)
         plt.show()
+
+if __name__=='__main__':
+    edgelist = [
+        (0, 1, 1),
+        (1, 2, 2),
+        (2, 3, 3),
+        (3, 4, 4),
+        (4, 0, 5),
+    ]
+
+    g = nx.Graph()
+    g.add_weighted_edges_from(edgelist)
+    nx.draw(g)
+    plt.show()
 

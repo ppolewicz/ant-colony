@@ -35,8 +35,8 @@ class Edge(object):
         return self.b_end.point==other.b_end.point
     def __hash__(self):
         return hash((self.a_end.point, self.b_end.point))
-    #def __repr__(self):
-    #    return 'Edge{%s <[%s]--[%s]> %s (%s)}' % (self.a_end.point, self.a_end.pheromone_level, self.b_end.pheromone_level, self.b_end.point, self.cost)
+    def __repr__(self):
+        return 'Edge{%s <[%s]--[%s]> %s (%s)}' % (self.a_end.point, self.a_end.pheromone_level, self.b_end.pheromone_level, self.b_end.point, self.cost)
     def get_other_end(self, end):
         if end.point==self.a_end.point:
             return self.b_end
@@ -47,6 +47,8 @@ class Edge(object):
             return self.b_end
         else:
             return self.a_end
+    def pheromone_sum(self):
+        return self.a_end.pheromone_level + self.b_end.pheromone_level
     def register_with_points(self):
         for end in self.a_end, self.b_end:
             end.point.add_edge_end(end)

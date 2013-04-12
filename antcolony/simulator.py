@@ -4,7 +4,9 @@ import heapq
 
 import ant2
 from queen import BasicQueen
-from reality_factory import RealityFactory
+from reality_factory import JsonRealityDeserializer
+#from reality_factory import SlightlyRandomizedRealityFactory
+from reality_factory import ChessboardRealityFactory
 from edge import DummyEdgeEnd
 
 def avg(iterable):
@@ -50,6 +52,8 @@ class AbstractAntMove(AbstractSimulationEvent):
             self.destination.point.food += self.ant.food
             self.trip_stats.back_home()
             new_ant = self.ant.__class__(self.ant.world_parameters)
+            from vizualizer import Vizualizer
+            Vizualizer.render_world(world)
             return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=world.elapsed_time)
         new_destination_edge, pheromone_to_drop = self.ant.tick(self.destination.point)
         self.trip_stats.normal_move(new_destination_edge.cost)
@@ -146,16 +150,19 @@ class Simulation(object):
 
 
 #reality = RealityFactory.create_reality(0, 1, 20, 2)
-#edgelist = [(edge.a_end, edge.b_end, {'weight': edge.cost}) for edge in reality.world.edges]
+#reality = ChessboardRealityFactory.create_reality(0, 1, 2, 10)
 #from vizualizer import Vizualizer
-#Vizualizer.draw_edges(edgelist)
+#Vizualizer.render_reality(reality)
+#import sys; sys.exit(123)
 
 #pprint(reality.world.to_json())
 
 world_dir = 'worlds'
-#for x in xrange(20):
-#    reality = RealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_points=30, number_of_dimensions=2)
-#    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
+amout_to_generate = 20 # 20
+for x in xrange(amout_to_generate):
+    #reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=2, number_of_points=30)
+    reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=2, width=10)
+    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
 
 #import sys
 #sys.exit(0)
@@ -166,7 +173,7 @@ for file_ in ['world-11.json']:
     file_ = os.path.join(world_dir, file_)
     assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (world_dir, file_)
     json_world = json.load(open(file_, 'r'))
-    reality = RealityFactory.from_json_world(json_world, min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1)
+    reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
 
     #queen = BasicQueen(ant.PurelyRandomAnt)
     queen = BasicQueen(ant2.BasicAnt)
