@@ -44,6 +44,10 @@ options.world_type = 'CrossedChessboard'
 options.number_of_dimensions = 2
 #options.number_of_dimensions = 3
 
+# queen
+#options.queen = 'PurelyRandom'
+options.queen = 'Ant2'
+
 # amount of ants
 options.amount_of_ants = 1
 #options.amount_of_ants = 20
@@ -84,10 +88,9 @@ for file_ in sorted(os.listdir(options.world_dir)):
 
     s = Simulation(reality)
 
-    edgelist = [(edge.a_end.point, edge.b_end.point, {'weight': edge.cost}) for edge in reality.world.edges]
-    from vizualizer import Vizualizer
-    Vizualizer.draw_edges(edgelist)
-    exit(1)
+    #from vizualizer import Vizualizer
+    #Vizualizer.render_reality(reality)
+    #exit(1)
 
     for options.amount_of_ants in [1]:
         results = [s.run(queen, options.amount_of_ants, reality) for i in xrange(options.how_many_tests_per_queenworld)]

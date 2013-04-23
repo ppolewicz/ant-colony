@@ -64,3 +64,54 @@ class ChessboardEdgeGenerator(SimpleEdgeGenerator):
                 if target_point is not None:
                     yield Edge(source_point, target_point, self._get_edge_cost(source_point, target_point))
 
+class CrossedChessboardEdgeGenerator(ChessboardEdgeGenerator):
+    def _get_candidates(self, source_coordinates):
+        assert len(source_coordinates) == 2, 'some edges would be missing'
+        for i in super(CrossedChessboardEdgeGenerator, self)._get_candidates(source_coordinates):
+            yield i
+        #yield tuple([coordinate +1 for coordinate in source_coordinates]) # longest edge in this dimension
+        yield tuple((source_coordinates[0]+1, source_coordinates[1]+1))
+        yield tuple((source_coordinates[0]+1, source_coordinates[1]-1))
+
+        # if someone would like to make it work for more dimensions, here are some clues:
+        #import numpy
+        #a = numpy.matrix([[1, 2], [3, 4]])
+        #b = numpy.matrix([[2, 2], [2, 2]])
+        #a+b
+        #matrix([[3, 4], [5, 6]])
+        #a.tolist()
+        #itertools.product
+
+
+if __name__=='__main__':
+    from point import Point
+    from pprint import pprint
+    def make_points(li_coords):
+        return [Point(coords) for coords in li_coords]
+    coords_2d = [
+        (0, 0),
+        (0, 1),
+        (1, 0),
+        (1, 1),
+    ]
+    coords_3d = [
+        (0, 0, 0),
+        (0, 0, 1),
+        (0, 1, 0),
+        (0, 1, 1),
+        (1, 0, 0),
+        (1, 0, 1),
+        (1, 1, 0),
+        (1, 1, 1),
+    ]
+    points_2d = make_points(coords_2d)
+    #points_3d = make_points(coords_3d)
+    generator = ChessboardEdgeGenerator()
+    generator = CrossedChessboardEdgeGenerator()
+    points = points_2d
+    pprint(
+        list(
+            generator._generate_all(points)
+        )
+    )
+

@@ -1,5 +1,5 @@
 from point_generator import SimplePointGenerator, ChessboardPointGenerator
-from edge_generator import SimpleEdgeGenerator, LimitedRandomCoefficientEdgeGenerator, ChessboardEdgeGenerator
+from edge_generator import SimpleEdgeGenerator, LimitedRandomCoefficientEdgeGenerator, ChessboardEdgeGenerator, CrossedChessboardEdgeGenerator
 from world_generator import SimpleWorldGenerator
 
 class AbstractWorldGeneratorFactory(object):
@@ -25,11 +25,40 @@ class SlightlyRandomizedWorldGeneratorFactory(AbstractWorldGeneratorFactory):
         return SimpleWorldGenerator(number_of_dimensions, point_generator, edge_generator, number_of_points)
 
 class ChessboardWorldGeneratorFactory(AbstractWorldGeneratorFactory):
-    """ generates N-dimensional raster-shaped worlds with equal edge costs equal to the distance between the points """
+    """ generates n-dimensional raster-shaped worlds with equal edge costs equal to the distance between the points, like this:
+        *----*----*
+        |    |    |
+        |    |    |
+        |    |    |
+        |    |    |
+        *----*----*
+        |    |    |
+        |    |    |
+        |    |    |
+        |    |    |
+        *----*----*
+        """
+    EDGE_GENERATOR_CLASS = ChessboardEdgeGenerator
     @classmethod
     def create_world_generator(cls, number_of_dimensions, width):
         number_of_points = width ** number_of_dimensions
         point_generator = ChessboardPointGenerator(number_of_dimensions, 0, width)
-        edge_generator = ChessboardEdgeGenerator()
+        edge_generator = cls.EDGE_GENERATOR_CLASS()
         return SimpleWorldGenerator(number_of_dimensions, point_generator, edge_generator, number_of_points)
+
+class CrossedChessboardWorldGeneratorFactory(AbstractWorldGeneratorFactory):
+    """ generates 2-dimensional raster-shaped worlds with equal edge costs equal to the distance between the points, like this:
+        *----*----*
+        |\  /|\  /|
+        | \/ | \/ |
+        | /\ | /\ |
+        |/  \|/  \|
+        *----*----*
+        |\  /|\  /|
+        | \/ | \/ |
+        | /\ | /\ |
+        |/  \|/  \|
+        *----*----*
+        """
+    EDGE_GENERATOR_CLASS = CrossedChessboardEdgeGenerator
 
