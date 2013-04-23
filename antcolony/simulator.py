@@ -1,12 +1,5 @@
-import os
-import json
 import heapq
 
-import ant2
-from queen import BasicQueen
-from reality_factory import JsonRealityDeserializer
-#from reality_factory import SlightlyRandomizedRealityFactory
-from reality_factory import ChessboardRealityFactory
 from edge import DummyEdgeEnd
 
 def avg(iterable):
@@ -112,7 +105,7 @@ class QueenStats(object):
 class Simulation(object):
     def __init__(self, reality):
         self.reality = reality
-    def run(self, queen, amount_of_ants):
+    def run(self, queen, amount_of_ants, reality):
         ant_classes = queen.spawn_ants(amount_of_ants)
         ants = [ant_class(self.reality.environment_parameters) for ant_class in ant_classes]
         anthills = reality.world.get_anthills()
@@ -147,51 +140,5 @@ class Simulation(object):
         new_antmove.process_start()
         heapq.heappush(antmoves, new_antmove)
         return antmoves
-
-
-#reality = RealityFactory.create_reality(0, 1, 20, 2)
-#reality = ChessboardRealityFactory.create_reality(0, 1, 2, 10)
-#from vizualizer import Vizualizer
-#Vizualizer.render_reality(reality)
-#import sys; sys.exit(123)
-
-#pprint(reality.world.to_json())
-
-world_dir = 'worlds'
-amout_to_generate = 20 # 20
-for x in xrange(amout_to_generate):
-    #reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=2, number_of_points=30)
-    reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=2, width=10)
-    json.dump(reality.world.to_json(), open(os.path.join(world_dir, 'world-%s.json' % (x,)), 'w'))
-
-#import sys
-#sys.exit(0)
-
-#for file_ in sorted(os.listdir(world_dir)):
-#for file_ in ['world-12.json']:
-for file_ in ['world-11.json']:
-    file_ = os.path.join(world_dir, file_)
-    assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (world_dir, file_)
-    json_world = json.load(open(file_, 'r'))
-    reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
-
-    #queen = BasicQueen(ant.PurelyRandomAnt)
-    queen = BasicQueen(ant2.BasicAnt)
-    amount_of_ants = 20
-    #amount_of_ants = 1
-    s = Simulation(reality)
-
-    #edgelist = [(edge.a_end.point, edge.b_end.point, {'weight': edge.cost}) for edge in reality.world.edges]
-    #from vizualizer import Vizualizer
-    #Vizualizer.draw_edges(edgelist)
-
-    #print file_, s.run(queen, amount_of_ants)
-    #for amount_of_ants in [1, 20, 50]:
-    how_many_tests_per_queenworld = 1
-    for amount_of_ants in [1]:
-        results = [s.run(queen, amount_of_ants) for i in xrange(how_many_tests_per_queenworld)]
-        elapsed = avg([elapsed for (elapsed, ticks) in results])
-        ticks = avg([ticks for (elapsed, ticks) in results])
-        print file_, amount_of_ants, elapsed, ticks
 
 
