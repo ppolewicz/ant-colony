@@ -15,8 +15,7 @@ class AbstractRealityFactory(object):
     def create_reality(cls, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, number_of_dimensions, *args, **kwargs):
         generator = cls.get_generator(number_of_dimensions, *args, **kwargs)
         world = generator.generate()
-        anthill = world.get_anthill()
-        environment_parameters = EnvironmentParameters(min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant, anthill)
+        environment_parameters = EnvironmentParameters.from_world(world, min_pheromone_dropped_by_ant, max_pheromone_dropped_by_ant)
         return Reality(world, environment_parameters)
 
 class SimpleRealityFactory(AbstractRealityFactory):
