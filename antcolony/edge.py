@@ -17,6 +17,7 @@ class EdgeEnd(AbstractEdgeEnd):
 class DummyEdgeEnd(AbstractEdgeEnd):
     def __init__(self, point):
         self.point = point
+        self.edge = None
     def drop_pheromone(self, amount):
         pass
 

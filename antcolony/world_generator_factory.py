@@ -46,7 +46,7 @@ class ChessboardWorldGeneratorFactory(AbstractWorldGeneratorFactory):
         edge_generator = cls.EDGE_GENERATOR_CLASS()
         return SimpleWorldGenerator(number_of_dimensions, point_generator, edge_generator, number_of_points)
 
-class CrossedChessboardWorldGeneratorFactory(AbstractWorldGeneratorFactory):
+class CrossedChessboardWorldGeneratorFactory(ChessboardWorldGeneratorFactory):
     """ generates 2-dimensional raster-shaped worlds with equal edge costs equal to the distance between the points, like this:
         *----*----*
         |\  /|\  /|

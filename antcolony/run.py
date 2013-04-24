@@ -7,7 +7,7 @@ import ant2
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from simulator import Simulation, avg
+from simulator import Simulator, avg
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -86,14 +86,19 @@ for file_ in sorted(os.listdir(options.world_dir)):
     else:
         raise Exception('Bad queen configuration')
 
-    s = Simulation(reality)
-
-    #from vizualizer import Vizualizer
-    #Vizualizer.render_reality(reality)
-    #exit(1)
-
+    from vizualizer import Vizualizer
     for options.amount_of_ants in [1]:
-        results = [s.run(queen, options.amount_of_ants, reality) for i in xrange(options.how_many_tests_per_queenworld)]
+
+        simulator = Simulator(reality)
+        simulation = simulator.simulate(queen, options.amount_of_ants, reality)
+        #Vizualizer.render_reality(reality)
+        Vizualizer.direct(simulation)
+        #simulator.run_simulation(simulation)
+        results = simulator.get_results(simulation)
+        print 'results', repr(results)
+        #exit(1)
+
+        #results = [simulator.run(queen, options.amount_of_ants, reality) for i in xrange(options.how_many_tests_per_queenworld)]
         elapsed = avg([elapsed for (elapsed, ticks) in results]) / options.amount_of_ants
         ticks = avg([ticks for (elapsed, ticks) in results])
         print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, options.queen, options.amount_of_ants, ticks, elapsed)
