@@ -15,14 +15,20 @@ class AbstractAnt(object):
         raise NotImplementedError()
     @classmethod
     def weighted_choice(cls, choice_dict):
+        """
+            returns roulette winner and a set of rejected choices
+        """
         total = sum(v for k, v in choice_dict.iteritems())
         mark = random.uniform(0, total)
         upto = 0
-        for k, v in sorted(choice_dict.iteritems()):
+        choice_dict_sorted = sorted(choice_dict)
+        for k in choice_dict_sorted:
+            v = choice_dict[k]
             upto += v
             if upto >= mark:
-                return k
-        assert False, 'We should never get here'
+                winner = k
+                break
+        return winner, set(choice_dict_sorted) - set([winner])
 
 class PurelyRandomAnt(AbstractAnt):
     """ ant that selects edges randomly. Very inefficient (unless very lucky). """
@@ -38,7 +44,7 @@ if __name__=='__main__':
     total = 1000000
     result = {}
     for x in xrange(total):
-        k = AbstractAnt.weighted_choice({y: 0.1234 for y in xrange(40)})
+        k, rest = AbstractAnt.weighted_choice({y: 0.1234 for y in xrange(40)})
         result[k] = result.get(k, 0) + 1
     for k, v in sorted(result.iteritems()):
         print '%s: %.3f%%' % (k, v*100.0/total)

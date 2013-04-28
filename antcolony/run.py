@@ -7,7 +7,8 @@ import ant2
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from simulator import Simulator, avg
+from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation, avg
+from simulation_director import BasicSimulationDirector, VizualizerSimulationDirector
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -55,6 +56,15 @@ options.amount_of_ants = 1
 # amount of tests performed on a (queen, world) pair
 options.how_many_tests_per_queenworld = 1
 
+# director
+#options.director = 'Basic'
+options.director = 'Vizualizer'
+
+# how often a frame should be drawn, if director drawing anything
+#options.simulation_granularity = 'Tick'
+#options.simulation_granularity = 'Spawn'
+options.simulation_granularity = 'MultiSpawn'
+
 ##########################################################################################################################################################
 
 
@@ -73,6 +83,23 @@ if options.generate_worlds>0:
             raise Exception('Bad world type configuration')
         json.dump(reality.world.to_json(), open(os.path.join(options.world_dir, 'world-%s.json' % (x,)), 'w'))
 
+if options.simulation_granularity=='Tick':
+    simulation_class = TickStepSimulation
+elif options.simulation_granularity=='Spawn':
+    simulation_class = SpawnStepSimulation
+elif options.simulation_granularity=='MultiSpawn':
+    simulation_class = MultiSpawnStepSimulation
+else:
+    raise Exception('Bad simulation granularity configuration')
+
+if options.director == 'Basic':
+    director = BasicSimulationDirector()
+elif options.director == 'Vizualizer':
+    director = VizualizerSimulationDirector()
+else:
+    raise Exception('Bad simulation granularity configuration')
+
+
 for file_ in sorted(os.listdir(options.world_dir)):
     file_ = os.path.join(options.world_dir, file_)
     assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (options.world_dir, file_)
@@ -86,19 +113,19 @@ for file_ in sorted(os.listdir(options.world_dir)):
     else:
         raise Exception('Bad queen configuration')
 
-    from vizualizer import Vizualizer
     for options.amount_of_ants in [1]:
 
-        simulator = Simulator(reality)
-        simulation = simulator.simulate(queen, options.amount_of_ants, reality)
+        simulator = Simulator(reality, simulation_class)
+        simulation = simulator.simulate(queen, options.amount_of_ants)
         #Vizualizer.render_reality(reality)
-        Vizualizer.direct(simulation)
+        director.direct(simulation)
         #simulator.run_simulation(simulation)
-        results = simulator.get_results(simulation)
-        print 'results', repr(results)
+        result = simulator.get_results(simulation)
+        print 'result', repr(result)
         #exit(1)
 
         #results = [simulator.run(queen, options.amount_of_ants, reality) for i in xrange(options.how_many_tests_per_queenworld)]
+        results = [result]
         elapsed = avg([elapsed for (elapsed, ticks) in results]) / options.amount_of_ants
         ticks = avg([ticks for (elapsed, ticks) in results])
         print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, options.queen, options.amount_of_ants, ticks, elapsed)

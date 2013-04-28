@@ -63,14 +63,14 @@ class Vizualizer(object):
             #print 'changed_entities', changed_entities
             if end:
                 stop_condition.stop()
-                print 'simulation should end'
+                print 'simulation should end!'
                 return []
             changed_edge_objects = [edge for edge in changed_entities if isinstance(edge, Edge)]
-            #print 'changed_edge_objects', changed_edge_objects
+            #print 'changed_edge_objects', changed_edge_objects, changed_entities
             changed_edges = [(edge.a_end.point, edge.b_end.point) for edge in changed_edge_objects]
 
             changed_point_objects = [point for point in changed_entities if isinstance(point, AbstractPoint)]
-            print 'changed_point_objects', changed_point_objects
+            #print 'changed_point_objects', changed_point_objects
 
             #changed_points = [point.coordinates for point in changed_point_objects]
             changed_points = changed_point_objects
@@ -80,10 +80,13 @@ class Vizualizer(object):
 
             #nx.draw_networkx_edges(g, pos=all_points, edge_color=[random.randint(1, 10) for a,b,c in edgelist], width=4, edge_cmap=edge_cmap, edge_vmin=0, edge_vmax=15)
             vmin = 0
-            vmax = 15
-            #max(edge.pheromone_sum()/2, 1) for edge in changed_edge_objects
-            print 'edge weight', [edge.pheromone_sum()/2 for edge in changed_edge_objects]
+            #vmax = 2500
+            vmax = 1
+            #vmax = max(max([edge.pheromone_sum()/2 for edge in changed_edge_objects]), 1)
+            #print 'vmax', vmax
+            #print 'edge weight', [edge.pheromone_sum()/2 for edge in changed_edge_objects]
             nx.draw_networkx_edges(g, edgelist=changed_edges, pos=all_points, edge_color=[edge.pheromone_sum()/2 for edge in changed_edge_objects], width=4, edge_cmap=edge_cmap, edge_vmin=vmin, edge_vmax=vmax)
+            #plt.colorbar()
             return []
         #def init():
         #    print 'init'
@@ -109,8 +112,7 @@ class Vizualizer(object):
             return []
 
         #anim = animation.FuncAnimation(fig, my_animate, init_func=init, interval=20, blit=True)
-        anim = animation.FuncAnimation(fig, my_animate, init_func=init, interval=20, blit=False)
-        #plt.colorbar()
+        anim = animation.FuncAnimation(fig, my_animate, frames=100, init_func=init, interval=20, blit=False)
         plt.show()
         anim # XXX
 
