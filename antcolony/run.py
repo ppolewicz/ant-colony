@@ -71,10 +71,11 @@ options.simulation_granularity = 'MultiSpawn'
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
     for x in xrange(options.generate_worlds):
+        chessboard_size = 2
         if options.world_type=='Chessboard':
-            reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=10)
+            reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='CrossedChessboard':
-            reality = CrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=10)
+            reality = CrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='Simple':
             reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=30)
         elif options.world_type=='SlightlyRandomized':
