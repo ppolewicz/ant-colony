@@ -8,7 +8,7 @@ from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
 from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation, avg
-from simulation_director import BasicSimulationDirector, VizualizerSimulationDirector
+from simulation_director import BasicSimulationDirector, AnimatingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -18,7 +18,7 @@ def prepare_directory(path):
     else:
         for the_file in os.listdir(path):
             file_path = os.path.join(path, the_file)
-            if os.path.isfile(file_path) and file_path.startswith('world-') and file_path.endswith('.json'):
+            if os.path.isfile(file_path) and not file_path.startswith('.py'):
                 os.unlink(file_path)
 
 class DummyClass(object):
@@ -58,12 +58,14 @@ options.how_many_tests_per_queenworld = 1
 
 # director
 #options.director = 'Basic'
-options.director = 'Vizualizer'
+#options.director = 'AnimatingVisualizer'
+options.director = 'ScreenRouteDrawingVisualizer'
+#options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png screenshots
 
 # how often a frame should be drawn, if director drawing anything
 #options.simulation_granularity = 'Tick'
-#options.simulation_granularity = 'Spawn'
-options.simulation_granularity = 'MultiSpawn'
+options.simulation_granularity = 'Spawn'
+#options.simulation_granularity = 'MultiSpawn'
 
 ##########################################################################################################################################################
 
@@ -71,7 +73,7 @@ options.simulation_granularity = 'MultiSpawn'
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
     for x in xrange(options.generate_worlds):
-        chessboard_size = 2
+        chessboard_size = 10
         if options.world_type=='Chessboard':
             reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='CrossedChessboard':
@@ -95,11 +97,15 @@ else:
 
 if options.director == 'Basic':
     director = BasicSimulationDirector()
-elif options.director == 'Vizualizer':
-    director = VizualizerSimulationDirector()
+elif options.director == 'AnimatingVisualizer':
+    director = AnimatingVisualizerSimulationDirector()
+elif options.director == 'ScreenRouteDrawingVisualizer':
+    director = ScreenRouteDrawingVisualizerSimulationDirector()
+elif options.director == 'FileRouteDrawingVisualizer':
+    prepare_directory('render')
+    director = FileRouteDrawingVisualizerSimulationDirector()
 else:
     raise Exception('Bad simulation granularity configuration')
-
 
 for file_ in sorted(os.listdir(options.world_dir)):
     file_ = os.path.join(options.world_dir, file_)
@@ -118,7 +124,7 @@ for file_ in sorted(os.listdir(options.world_dir)):
 
         simulator = Simulator(reality, simulation_class)
         simulation = simulator.simulate(queen, options.amount_of_ants)
-        #Vizualizer.render_reality(reality)
+        #Visualizer.render_reality(reality)
         director.direct(simulation)
         #simulator.run_simulation(simulation)
         result = simulator.get_results(simulation)
