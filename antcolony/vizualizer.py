@@ -57,17 +57,26 @@ class Vizualizer(object):
         class Redraw(object):
             pass
         redraw = Redraw()
-        redraw.points = []
+        redraw.points = set()
+        redraw.edges = set()
         def animate(simulation, frame_number, stop_condition, redraw):
-            changed_entities, end = simulation.advance()
+            changed_entities, end, edges_to_mark = simulation.advance()
             #print 'changed_entities', changed_entities
             if end:
                 stop_condition.stop()
                 print 'simulation should end!'
                 return []
-            changed_edge_objects = [edge for edge in changed_entities if isinstance(edge, Edge)]
+            changed_edge_objects = list(
+                set(
+                    [edge for edge in changed_entities if isinstance(edge, Edge)]
+                ) & redraw.edges
+            )
             #print 'changed_edge_objects', changed_edge_objects, changed_entities
             changed_edges = [(edge.a_end.point, edge.b_end.point) for edge in changed_edge_objects]
+            marked_edges = [(edge.a_end.point, edge.b_end.point) for edge in edges_to_mark]
+            #print 'redraw', [(edge.a_end.point, edge.b_end.point) for edge in redraw.edges]
+            #print 'mark', marked_edges
+            redraw.edges = set(edges_to_mark)
 
             changed_point_objects = [point for point in changed_entities if isinstance(point, AbstractPoint)]
             #print 'changed_point_objects', changed_point_objects
@@ -86,6 +95,7 @@ class Vizualizer(object):
             #print 'vmax', vmax
             #print 'edge weight', [edge.pheromone_sum()/2 for edge in changed_edge_objects]
             nx.draw_networkx_edges(g, edgelist=changed_edges, pos=all_points, edge_color=[edge.pheromone_sum()/2 for edge in changed_edge_objects], width=4, edge_cmap=edge_cmap, edge_vmin=vmin, edge_vmax=vmax)
+            nx.draw_networkx_edges(g, edgelist=marked_edges, pos=all_points, edge_color='r', width=2)
             #plt.colorbar()
             return []
         #def init():

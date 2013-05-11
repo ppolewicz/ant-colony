@@ -1,3 +1,5 @@
+from collections import deque
+import copy
 import heapq
 
 from edge import DummyEdgeEnd
@@ -42,6 +44,7 @@ class AbstractAntMove(AbstractSimulationEvent):
         return frozenset((self.origin.edge, self.origin.point))
     def process_end(self, world, stats):
         changed = [self.destination.edge]
+        self.trip_stats.edge_visited(self.destination.edge)
         self.destination.drop_pheromone(self.pheromone_to_drop)
         if not self.destination.point.is_anthill() and self.destination.point.food > 0 and not self.ant.food:
             changed.append(self.destination.point)
@@ -50,12 +53,15 @@ class AbstractAntMove(AbstractSimulationEvent):
             self.ant.food += 1
             stats.food_found(self.trip_stats)
             stats.present()
-        elif self.destination.point.is_anthill() and self.ant.food:
-            changed.append(self.destination.point)
-            self.destination.point.food += self.ant.food
-            self.trip_stats.back_home()
-            new_ant = self.ant.__class__(self.ant.world_parameters)
-            return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=world.elapsed_time), frozenset(changed)
+        elif self.destination.point.is_anthill():
+            if self.ant.food:
+                changed.append(self.destination.point)
+                self.destination.point.food += self.ant.food
+                self.trip_stats.back_home()
+                new_ant = self.ant.__class__(self.ant.world_parameters)
+                return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=world.elapsed_time), frozenset(changed)
+            else:
+                self.trip_stats.reset_route()
         new_destination_edge, pheromone_to_drop = self.ant.tick(self.destination.point)
         self.trip_stats.normal_move(new_destination_edge.cost)
         new_destination = new_destination_edge.get_other_end(self.destination)
@@ -91,11 +97,16 @@ class TripStats(object):
         self.food_found_after = 0, 0
         self.total_cost = 0
         self.total_moves = 0
+        self.visited = deque()
+    def reset_route(self):
+        self.visited = deque()
     def food_found(self):
         self.food_found_after = self.total_moves, self.total_cost
     def normal_move(self, cost):
         self.total_moves += 1
         self.total_cost += cost
+    def edge_visited(self, edge):
+        self.visited.append(edge)
     def back_home(self):
         #print 'moves: %s, cost: %s, to find: %s' % (self.total_moves, self.total_cost, self.food_found_after)
         pass
@@ -108,11 +119,13 @@ class QueenStats(object):
         self.number_of_ants = number_of_ants
         self.best_finding_cost = 999999999
         self.last_cost = 0
+        self.last_route = []
     def food_found(self, trip_stats):
         self.food_discovered += 1
         self.last_cost = trip_stats.food_found_after[1]
         self.moves_leading_to_food_being_found += trip_stats.food_found_after[0]
         self.best_finding_cost = min(self.best_finding_cost, trip_stats.food_found_after[1])
+        self.last_route = copy.copy(trip_stats.visited)
     def present(self):
         avg_cost = (self.reality.world.elapsed_time*self.number_of_ants)/self.food_discovered
         avg_moves = self.moves_leading_to_food_being_found/self.food_discovered
@@ -138,14 +151,15 @@ class AbstractSimulation(object):
         assert changed_items_start is not None, new_antmove
         heapq.heappush(self.antmoves, new_antmove)
         self.ticks += 1
-        return changed_items_start & changed_items_end
+        return changed_items_start & changed_items_end, self.stats
 
 class TickStepSimulation(AbstractSimulation):
     def advance(self):
         print 'ticks', self.ticks
         if self.reality.is_resolved():
             return [], True
-        return self.tick(), False
+        tick_changed_items, stats = self.tick()
+        return tick_changed_items, False, stats.last_route
 
 class MultiSpawnStepSimulation(AbstractSimulation):
     def __init__(self, reality, *args, **kwargs):
@@ -159,14 +173,14 @@ class MultiSpawnStepSimulation(AbstractSimulation):
         changed_items = set()
         amount = 0
         while amount <= self.spawn_amount:
-            tick_result = self.tick()
-            changed_items.update(tick_result)
+            tick_changed_items, stats = self.tick()
+            changed_items.update(tick_changed_items)
             anthill_food_post_tick = sum([anthill.food for anthill in self.anthills])
             if anthill_food_post_tick != anthill_food_pre_tick+amount:
                 if self.reality.is_resolved():
                     break
                 amount += 1
-        return changed_items, False
+        return changed_items, False, stats.last_route
 
 class SpawnStepSimulation(MultiSpawnStepSimulation):
     def __init__(self, reality, *args, **kwargs):
