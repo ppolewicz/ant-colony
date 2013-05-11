@@ -3,16 +3,16 @@ class AbstractEdgeEnd(object):
         raise NotImplementedError()
 
 class EdgeEnd(AbstractEdgeEnd):
-    def __init__(self, edge, point, pheromone_level):
+    def __init__(self, edge, point):
         self.edge = edge
         self.point = point
-        self.pheromone_level = pheromone_level
+        self.reset()
     def drop_pheromone(self, amount):
         self.pheromone_level += amount
     def reset(self):
-        self.pheromone_level = 0
+        self.pheromone_level = 0.0
     def __repr__(self):
-        return ''
+        return 'EdgeEnd of %s, point: %s, pheromone: %s' % (self.edge, self.point, self.pheromone_level)
 
 class DummyEdgeEnd(AbstractEdgeEnd):
     def __init__(self, point):
@@ -27,8 +27,8 @@ class Edge(object):
     def __init__(self, point_A, point_B, cost):
         a_point, b_point = sorted([point_A, point_B])
         assert a_point!=b_point, a_point
-        self.a_end = EdgeEnd(self, a_point, 0)
-        self.b_end = EdgeEnd(self, b_point, 0)
+        self.a_end = EdgeEnd(self, a_point)
+        self.b_end = EdgeEnd(self, b_point)
         self.cost = cost
     def __eq__(self, other):
         if self.a_end.point!=other.a_end.point:
@@ -41,13 +41,17 @@ class Edge(object):
     def get_other_end(self, end):
         if end.point==self.a_end.point:
             return self.b_end
-        else:
+        elif end.point==self.b_end.point:
             return self.a_end
+        else:
+            assert False, 'This is an end of some other edge'
     def get_other_end_by_point(self, point):
         if point==self.a_end.point:
             return self.b_end
-        else:
+        elif point==self.b_end.point:
             return self.a_end
+        else:
+            assert False, "This edge's neither point is the one that was supplied"
     def pheromone_sum(self):
         return self.a_end.pheromone_level + self.b_end.pheromone_level
     def register_with_points(self):

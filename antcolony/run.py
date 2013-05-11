@@ -7,8 +7,9 @@ import ant2
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation, avg
+from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulation_director import BasicSimulationDirector, AnimatingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
+from util import avg
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -45,6 +46,10 @@ options.world_type = 'CrossedChessboard'
 options.number_of_dimensions = 2
 #options.number_of_dimensions = 3
 
+# initial food
+options.force_initial_food = 10000
+#options.force_initial_food = None # World's default
+
 # queen
 #options.queen = 'PurelyRandom'
 options.queen = 'Ant2'
@@ -64,8 +69,8 @@ options.director = 'ScreenRouteDrawingVisualizer'
 
 # how often a frame should be drawn, if director drawing anything
 #options.simulation_granularity = 'Tick'
-options.simulation_granularity = 'Spawn'
-#options.simulation_granularity = 'MultiSpawn'
+#options.simulation_granularity = 'Spawn'
+options.simulation_granularity = 'MultiSpawn'
 
 ##########################################################################################################################################################
 
@@ -73,15 +78,16 @@ options.simulation_granularity = 'Spawn'
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
     for x in xrange(options.generate_worlds):
-        chessboard_size = 10
+        chessboard_size = 20
+        number_of_points = 10
         if options.world_type=='Chessboard':
             reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='CrossedChessboard':
             reality = CrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='Simple':
-            reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=30)
+            reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         elif options.world_type=='SlightlyRandomized':
-            reality = SlightlyRandomizedRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=30)
+            reality = SlightlyRandomizedRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         else:
             raise Exception('Bad world type configuration')
         json.dump(reality.world.to_json(), open(os.path.join(options.world_dir, 'world-%s.json' % (x,)), 'w'))
@@ -107,11 +113,15 @@ elif options.director == 'FileRouteDrawingVisualizer':
 else:
     raise Exception('Bad simulation granularity configuration')
 
+force_initial_food = options.force_initial_food
+
 for file_ in sorted(os.listdir(options.world_dir)):
     file_ = os.path.join(options.world_dir, file_)
     assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (options.world_dir, file_)
     json_world = json.load(open(file_, 'r'))
     reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
+    if force_initial_food:
+        reality.world.reset(force_initial_food)
 
     if options.queen == 'PurelyRandom':
         queen = BasicQueen(ant.PurelyRandomAnt)

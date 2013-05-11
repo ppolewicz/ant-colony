@@ -1,5 +1,6 @@
 from point import AnthillPoint, FoodPoint, Point
 from edge import Edge
+from util import avg
 
 class World(object):
     JSON_KEY_EDGES = 'edges'
@@ -27,11 +28,14 @@ class World(object):
         return [point for point in self.points if not point.is_anthill() and not point.food > 0]
     def __repr__(self):
         return 'World (%f):\n    ' % self.elapsed_time + '\n    '.join(map(str, self.edges))
-    def reset(self):
+    def reset(self, force_initial_food=None):
         for edge in self.edges:
             edge.reset()
         for point, food in self.initial_food:
-            point.food = food
+            if force_initial_food is None:
+                point.food = food
+            else:
+                point.food = force_initial_food
         self.elapsed_time = 0.0
     def to_json(self):
         points = {}
@@ -63,4 +67,8 @@ class World(object):
             e.register_with_points()
             edges.add(e)
         return cls(points, edges)
+    def get_average_pheromone_level(self):
+        return avg([edge.pheromone_sum() for edge in self.edges]) / 2
+    def get_max_pheromone_level(self):
+        return max([edge.pheromone_sum() / 2 for edge in self.edges]) # simplification
 

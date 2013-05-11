@@ -4,9 +4,6 @@ import heapq
 
 from edge import DummyEdgeEnd
 
-def avg(iterable):
-    return sum(iterable) / len(iterable)
-
 class AbstractSimulationEvent(object):
     def process_start(self):
         return frozenset()
@@ -14,20 +11,22 @@ class AbstractSimulationEvent(object):
         return frozenset()
 
 class PheromoneVaporization(AbstractSimulationEvent):
-    #AMOUNT = 1 # per ant
-    AMOUNT = 0 # per ant XXX
-    PERIOD = 200
+    MULTIPLIER = 0.8
+    PERIOD = 100
+    TRIGGER_LEVEL = 100
     def __init__(self, end_time, ant_count):
         self.end_time = end_time
         self.ant_count = ant_count
     def process_end(self, world, stats):
         changed = []
-        for edge in world.edges:
-            for edge_end in (edge.a_end, edge.b_end):
-                new = max(0, edge_end.pheromone_level - (self.AMOUNT*self.ant_count))
-                if edge_end.pheromone_level!=new:
-                    edge_end.pheromone_level = new
-                    changed.append(edge_end.edge)
+        max_pheromone = world.get_max_pheromone_level()
+        if max_pheromone >= self.TRIGGER_LEVEL:
+            for edge in world.edges:
+                for edge_end in (edge.a_end, edge.b_end):
+                    new = max(0.0, edge_end.pheromone_level*self.MULTIPLIER)
+                    if edge_end.pheromone_level!=new:
+                        changed.append(edge_end.edge)
+                        edge_end.pheromone_level = new
         return PheromoneVaporization(self.end_time+self.PERIOD, self.ant_count), frozenset(changed)
 
 class AbstractAntMove(AbstractSimulationEvent):
@@ -35,17 +34,23 @@ class AbstractAntMove(AbstractSimulationEvent):
         self.ant = ant
         self.origin = origin
         self.destination = destination
+        if self.origin is not None and self.destination is not None:
+            if self.origin.edge is not None and self.destination.edge is not None:
+                #print 'origin', self.origin
+                #print 'destination', self.destination
+                assert self.origin.edge == self.destination.edge
         self.end_time = end_time
         self.pheromone_to_drop = pheromone_to_drop
         self.trip_stats = trip_stats
     def process_start(self):
         self.origin.drop_pheromone(self.pheromone_to_drop)
-        #return (self.origin.edge,)
+        #print "1 dropping %s pheromone on %s" % (self.pheromone_to_drop, self.origin)
         return frozenset((self.origin.edge, self.origin.point))
     def process_end(self, world, stats):
         changed = [self.destination.edge]
         self.trip_stats.edge_visited(self.destination.edge)
         self.destination.drop_pheromone(self.pheromone_to_drop)
+        #print "2 dropping %s pheromone on %s" % (self.pheromone_to_drop, self.destination)
         if not self.destination.point.is_anthill() and self.destination.point.food > 0 and not self.ant.food:
             changed.append(self.destination.point)
             self.trip_stats.food_found()
@@ -63,12 +68,14 @@ class AbstractAntMove(AbstractSimulationEvent):
             else:
                 self.trip_stats.reset_route()
         new_destination_edge, pheromone_to_drop = self.ant.tick(self.destination.point)
+        assert new_destination_edge in (end.edge for end in self.destination.point.edge_ends), 'Illegal ant move'
         self.trip_stats.normal_move(new_destination_edge.cost)
-        new_destination = new_destination_edge.get_other_end(self.destination)
+        new_destination = new_destination_edge.get_other_end_by_point(self.destination.point)
+        origin = new_destination_edge.get_other_end(new_destination)
         end_time = world.elapsed_time + new_destination_edge.cost
         return AntMove(
             ant=self.ant,
-            origin=self.destination,
+            origin=origin,
             destination=new_destination,
             end_time=end_time,
             pheromone_to_drop=pheromone_to_drop,
@@ -129,7 +136,7 @@ class QueenStats(object):
     def present(self):
         avg_cost = (self.reality.world.elapsed_time*self.number_of_ants)/self.food_discovered
         avg_moves = self.moves_leading_to_food_being_found/self.food_discovered
-        avg_pheromone = avg([edge.a_end.pheromone_level + edge.b_end.pheromone_level for edge in self.reality.world.edges]) / 2
+        avg_pheromone = self.reality.world.get_average_pheromone_level()
         print 'food found: %d, best: %.3f, avg. pheromone: %.3f, avg. moves to find: %d, avg. cost to find: %.3f, time: %d, last_cost: %s' % (self.food_discovered, self.best_finding_cost, avg_pheromone, avg_moves, avg_cost, self.reality.world.elapsed_time, self.last_cost)
 
 class AbstractSimulation(object):
@@ -157,7 +164,7 @@ class TickStepSimulation(AbstractSimulation):
     def advance(self):
         print 'ticks', self.ticks
         if self.reality.is_resolved():
-            return [], True
+            return [], True, None
         tick_changed_items, stats = self.tick()
         return tick_changed_items, False, stats.last_route
 
@@ -168,7 +175,7 @@ class MultiSpawnStepSimulation(AbstractSimulation):
         self.anthills = reality.world.get_anthills()
     def advance(self):
         if self.reality.is_resolved():
-            return [], True
+            return [], True, None
         anthill_food_pre_tick = sum([anthill.food for anthill in self.anthills])
         changed_items = set()
         amount = 0

@@ -36,6 +36,7 @@ class FileSavingDirectorMixin(object):
 class AbstractVisualizer(object):
     #EDGE_CMAP = plt.cm.jet
     EDGE_CMAP = plt.cm.winter_r
+    NODE_SIZE = 200 # default was 600
     def __init__(self, simulation, *args, **kwargs):
         self.simulation = simulation
         self.fig = None
@@ -63,13 +64,13 @@ class AbstractVisualizer(object):
             self.fig = plt.figure()
 
         normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.has_food()}
-        nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w')
+        nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w', node_size=self.NODE_SIZE)
 
         food_points = {point: point.coordinates for point in world.get_food_points()}
-        nx.draw_networkx_nodes(g, pos=food_points, nodelist=food_points.keys(), node_color='g', label='food')
+        nx.draw_networkx_nodes(g, pos=food_points, nodelist=food_points.keys(), node_color='g', node_size=self.NODE_SIZE, label='food')
 
         anthills = {point: point.coordinates for point in world.get_anthills()}
-        nx.draw_networkx_nodes(g, pos=anthills, nodelist=anthills.keys(), node_color='b', label='anthill')
+        nx.draw_networkx_nodes(g, pos=anthills, nodelist=anthills.keys(), node_color='b', node_size=self.NODE_SIZE, label='anthill')
 
         self.all_points = {point: point.coordinates for point in world.points}
 
@@ -88,14 +89,17 @@ class AbstractVisualizer(object):
         pass
 
     def animate(self, frame_number, stop_condition, redraw_hints):
-        self.pre_animate()
+        #if stop_condition():
+        #    print 'simulation should end!'
+        #    return []
+        changed_entities, end, edges_to_mark = self.simulation.advance()
         g = self.g
         all_points = self.all_points
-        changed_entities, end, edges_to_mark = self.simulation.advance()
         if end:
             stop_condition.stop()
             print 'simulation should end!'
             return []
+        self.pre_animate()
 
         changed_edge_objects = self.get_changed_edge_objects(changed_entities, redraw_hints)
         changed_edges = [(edge.a_end.point, edge.b_end.point) for edge in changed_edge_objects]
@@ -103,13 +107,13 @@ class AbstractVisualizer(object):
         changed_point_objects = [point for point in changed_entities if isinstance(point, AbstractPoint)]
 
         changed_points = changed_point_objects
-        nx.draw_networkx_nodes(g, pos=all_points, nodelist=redraw_hints.points, node_color='w')
-        nx.draw_networkx_nodes(g, pos=all_points, nodelist=changed_points, node_color='r')
+        nx.draw_networkx_nodes(g, pos=all_points, nodelist=redraw_hints.points, node_color='w', node_size=self.NODE_SIZE)
+        nx.draw_networkx_nodes(g, pos=all_points, nodelist=changed_points, node_color='r', node_size=self.NODE_SIZE)
         redraw_hints.points = changed_points
 
         vmin = 0
-        vmax = 1
-        #vmax = max([edge.pheromone_sum()/2 for edge in changed_edge_objects] + [1])
+        #vmax = 1
+        vmax = max([edge.pheromone_sum()/2 for edge in changed_edge_objects] + [0.000001])
         nx.draw_networkx_edges(g, edgelist=changed_edges, pos=all_points, edge_color=[edge.pheromone_sum()/2 for edge in changed_edge_objects], width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=vmin, edge_vmax=vmax)
         self.process_visited_edges(redraw_hints, edges_to_mark)
         #plt.colorbar()
@@ -129,7 +133,7 @@ class StopCondition(object):
     def stop(self):
         self.keep_going = 0
     def __call__(self, *args):
-        return self.keep_going
+        return self.keep_going <= 0
 
 class ResettingVisualizer(AbstractVisualizer):
     def pre_animate(self):

@@ -36,7 +36,7 @@ class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
 class LimitedRandomCoefficientEdgeGenerator(RandomCoefficientEdgeGenerator):
     def _generate_all(self, points, *args, **kwargs):
         min_hint_edges_from_point = 2
-        max_hint_edges_from_point = 4
+        max_hint_edges_from_point = 3
         existing_edges = set()
         for source_point in points:
             temporary_edges = []
