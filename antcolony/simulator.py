@@ -171,7 +171,7 @@ class TickStepSimulation(AbstractSimulation):
 class MultiSpawnStepSimulation(AbstractSimulation):
     def __init__(self, reality, *args, **kwargs):
         super(MultiSpawnStepSimulation, self).__init__(reality, *args, **kwargs)
-        self.spawn_amount = 100
+        self.spawn_amount = 50
         self.anthills = reality.world.get_anthills()
     def advance(self):
         if self.reality.is_resolved():
