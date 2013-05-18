@@ -10,6 +10,7 @@ from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFa
 from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulation_director import BasicSimulationDirector, AnimatingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
 from util import avg
+from vaporization import ExponentPheromoneVaporization, MultiplierPheromoneVaporization
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -23,6 +24,9 @@ def prepare_directory(path):
                 os.unlink(file_path)
 
 class DummyClass(object):
+    pass
+
+class BadConfigurationException(Exception):
     pass
 
 
@@ -47,7 +51,8 @@ options.number_of_dimensions = 2
 #options.number_of_dimensions = 3
 
 # initial food
-options.force_initial_food = 10000
+options.force_initial_food = 1500
+#options.force_initial_food = 10000
 #options.force_initial_food = None # World's default
 
 # queen
@@ -72,6 +77,10 @@ options.director = 'ScreenRouteDrawingVisualizer'
 #options.simulation_granularity = 'Spawn'
 options.simulation_granularity = 'MultiSpawn'
 
+# what should be the mode of pheromone vaporization
+#options.vaporizator_mode = 'Multiplier' # fair
+options.vaporizator_mode = 'Exponent' # vaporize edges with high pheromone concentration faster
+
 ##########################################################################################################################################################
 
 
@@ -89,7 +98,7 @@ if options.generate_worlds>0:
         elif options.world_type=='SlightlyRandomized':
             reality = SlightlyRandomizedRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         else:
-            raise Exception('Bad world type configuration')
+            raise BadConfigurationException('Bad world type configuration')
         json.dump(reality.world.to_json(), open(os.path.join(options.world_dir, 'world-%s.json' % (x,)), 'w'))
 
 if options.simulation_granularity=='Tick':
@@ -99,7 +108,14 @@ elif options.simulation_granularity=='Spawn':
 elif options.simulation_granularity=='MultiSpawn':
     simulation_class = MultiSpawnStepSimulation
 else:
-    raise Exception('Bad simulation granularity configuration')
+    raise BadConfigurationException('Bad simulation granularity configuration')
+
+if options.vaporizator_mode=='Multiplier':
+    vaporizator_class = MultiplierPheromoneVaporization
+elif options.vaporizator_mode=='Exponent':
+    vaporizator_class = ExponentPheromoneVaporization
+else:
+    raise BadConfigurationException('Bad vaporizator mode configuration')
 
 if options.director == 'Basic':
     director = BasicSimulationDirector()
@@ -111,7 +127,7 @@ elif options.director == 'FileRouteDrawingVisualizer':
     prepare_directory('render')
     director = FileRouteDrawingVisualizerSimulationDirector()
 else:
-    raise Exception('Bad simulation granularity configuration')
+    raise BadConfigurationException('Bad simulation granularity configuration')
 
 force_initial_food = options.force_initial_food
 
@@ -128,11 +144,11 @@ for file_ in sorted(os.listdir(options.world_dir)):
     elif options.queen == 'Ant2':
         queen = BasicQueen(ant2.BasicAnt)
     else:
-        raise Exception('Bad queen configuration')
+        raise BadConfigurationException('Bad queen configuration')
 
     for options.amount_of_ants in [1]:
 
-        simulator = Simulator(reality, simulation_class)
+        simulator = Simulator(reality, simulation_class, vaporizator_class)
         simulation = simulator.simulate(queen, options.amount_of_ants)
         #Visualizer.render_reality(reality)
         director.direct(simulation)
