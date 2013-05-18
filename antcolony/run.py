@@ -7,7 +7,8 @@ import ant2
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from simulator import Simulator, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
+from simulation import MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
+from simulator import Simulator
 from simulation_director import BasicSimulationDirector, AnimatingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
 from util import avg
 from vaporization import ExponentPheromoneVaporization, MultiplierPheromoneVaporization
@@ -70,7 +71,8 @@ options.how_many_tests_per_queenworld = 1
 #options.director = 'Basic'
 #options.director = 'AnimatingVisualizer'
 options.director = 'ScreenRouteDrawingVisualizer'
-#options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png screenshots
+#options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
+#options.director = 'FileDrawingVisualizer' # doesn't show on screen, but saves png world screenshots
 
 # how often a frame should be drawn, if director drawing anything
 #options.simulation_granularity = 'Tick'

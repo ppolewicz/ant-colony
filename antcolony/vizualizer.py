@@ -152,6 +152,9 @@ class StateVisualizer(AbstractVisualizer):
 
 #class AnimatingVisualizer(StateVisualizer, ScreenPresentingDirectorMixin): # this makes sense when We render each tick, but performance improvement is questionable
 
+class FileDrawingVisualizer(FileSavingDirectorMixin, ResettingVisualizer):
+    pass
+
 class AnimatingVisualizer(ScreenPresentingDirectorMixin, ResettingVisualizer):
     pass
 
