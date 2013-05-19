@@ -32,7 +32,7 @@ class FileSavingDirectorMixin(object):
 
         for frame_number in itertools.count():
             self.animate(frame_number, stop_condition, redraw)
-            plt.savefig(os.path.join(self.artifact_directory, "%s.png" % frame_number))
+            self._save_to_file(frame_number)
             if self.simulation.reality.world.is_resolved():
                 break
 
@@ -75,17 +75,20 @@ class AbstractVisualizer(object):
 
         self.all_points = {point: point.coordinates for point in world.points}
 
-    def render_world(self, world, filename=None):
+    def render_world(self, world, filename_part=None):
         self._prepare_world()
         self._draw_edges_pheromone(world.edges)
         #plt.sci(nodes)
         plt.colorbar()
         #,width=2,edge_cmap=plt.cm.Jet,with_labels=True
         #nx.draw(g)
-        if filename:
-            plt.savefig(os.path.join(self.artifact_directory, "%s.png" % (filename,)))
+        if filename_part:
+            self._save_to_file(filename_part)
         else:
             plt.show()
+
+    def _save_to_file(self, filename_part):
+        plt.savefig(os.path.join(self.artifact_directory, "%s.png" % (filename_part,)), bbox_inches='tight')
 
     def init(self):
         return []
