@@ -28,8 +28,11 @@ class AbstractAnt(object):
             upto += v
             if upto >= mark:
                 winner = k
-                break
-        return winner, set(choice_dict_sorted) - set([winner])
+                return winner, set(choice_dict_sorted) - set([winner])
+        print "choice_dict_sorted", choice_dict_sorted
+        print "upto", upto
+        print "total", total
+        assert False, 'AbstractAnt.weighted_choice fell out of a loop. Negative edge cost?'
 
 class PurelyRandomAnt(AbstractAnt):
     """ ant that selects edges randomly. Very inefficient (unless very lucky). """
