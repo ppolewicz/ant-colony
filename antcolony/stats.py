@@ -1,5 +1,6 @@
 from collections import deque
 import copy
+from sys import maxint
 
 from util import avg
 
@@ -27,7 +28,7 @@ class QueenStats(object):
         self.food_discovered = 0
         self.moves_leading_to_food_being_found = 0
         self.number_of_ants = number_of_ants
-        self.best_finding_cost = 999999999
+        self.best_finding_cost = maxint
         self.last_cost = 0
         self.last_route = []
         self.last_results = deque(maxlen=50)

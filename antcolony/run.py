@@ -10,7 +10,7 @@ from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFa
 from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
-from util import avg, nice_json_dump
+from util import nice_json_dump
 from vaporization import ExponentPheromoneVaporization, LogarithmPheromoneVaporization, MultiplierPheromoneVaporization
 from vizualizer import FileCostDrawingVisualizer, FileDrawingVisualizer
 
@@ -180,13 +180,10 @@ for file_ in sorted(os.listdir(options.world_dir)):
             simulation = simulator.simulate(queen, amount_of_ants)
             FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
             director.direct(simulation, artifact_directory)
-            result = simulator.get_results(simulation)
+            elapsed, ticks, queenstats = simulator.get_results(simulation)
 
             # this used to agregate data from several runs
-            results = [result]
-            elapsed = avg([elapsed for (elapsed, ticks) in results])
             elapsed_balanced = elapsed / amount_of_ants
-            ticks = avg([ticks for (elapsed, ticks) in results])
 
             data = {
                 'world': world_name,
@@ -197,6 +194,8 @@ for file_ in sorted(os.listdir(options.world_dir)):
                 'cost': elapsed,
                 'cost_balanced': elapsed_balanced,
                 'total_food': reality.world.get_total_food(),
+                'best_finding_cost': queenstats.best_finding_cost,
+                'moves_leading_to_food_being_found': queenstats.moves_leading_to_food_being_found,
             }
             nice_json_dump(reality.world.to_json(), os.path.join(artifact_directory, os.path.basename(file_)))
             FileDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'end')

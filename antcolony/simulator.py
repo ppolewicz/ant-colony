@@ -18,8 +18,9 @@ class Simulator(object):
         return self.simulation_class(self.reality, antmoves, stats)
     def get_results(self, simulation):
         ticks = simulation.ticks
+        stats = simulation.stats
         elapsed_time = self.reality.world.elapsed_time
-        return elapsed_time, ticks
+        return elapsed_time, ticks, stats
     def reset(self):
         self.reality.world.reset()
         self.vaporizator.reset()
