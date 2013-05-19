@@ -62,7 +62,9 @@ class AbstractVisualizer(object):
         if self.fig is not None:
             self.fig.clear()
         else:
-            self.fig = plt.figure(figsize=(14, 10), dpi=72) #, dpi=80 # figsize is in inches
+            self.fig = plt.figure(figsize=(24, 13.5), dpi=100) # figsize is in inches. x, y.
+
+        plt.autoscale(enable=True, axis='both', tight=True)
 
         normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.is_foodpoint()}
         nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w', node_size=self.NODE_SIZE)
