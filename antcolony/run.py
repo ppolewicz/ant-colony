@@ -10,6 +10,7 @@ from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFa
 from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
+from stats_saver import CSVStatsSaver, NullStatsSaver, TSVStatsSaver
 from util import nice_json_dump
 from vaporization import ExponentPheromoneVaporization, LogarithmPheromoneVaporization, MultiplierPheromoneVaporization
 from vizualizer import FileCostDrawingVisualizer, FileDrawingVisualizer
@@ -87,7 +88,12 @@ options.simulation_granularity = 'MultiSpawn'
 # what should be the mode of pheromone vaporization
 #options.vaporizator_mode = 'Multiplier' # fair
 #options.vaporizator_mode = 'Exponent' # probably broken
-options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration faster than the ones withg low concentration
+options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration faster than the ones with low concentration
+
+# what format should the stats be saved in
+options.statssaver_extension = 'csv'
+#options.statssaver_extension = 'tsv'
+#options.statssaver_extension = None # stats saving disabled
 
 ##########################################################################################################################################################
 
@@ -144,6 +150,15 @@ elif options.director == 'FileDrawingVisualizer':
 else:
     raise BadConfigurationException('Bad simulation granularity configuration')
 
+if options.statssaver_extension == 'csv':
+    statssaver_class = CSVStatsSaver
+elif options.statssaver_extension == 'tsv':
+    statssaver_class = TSVStatsSaver
+elif options.statssaver_extension is None:
+    statssaver_class = NullStatsSaver
+else:
+    raise BadConfigurationException('Bad statssaver extension configuration')
+
 force_initial_food = options.force_initial_food
 
 for file_ in sorted(os.listdir(options.world_dir)):
@@ -177,7 +192,8 @@ for file_ in sorted(os.listdir(options.world_dir)):
             #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
             prepare_directory(artifact_directory)
             simulator = Simulator(reality, simulation_class, vaporizator)
-            simulation = simulator.simulate(queen, amount_of_ants)
+            stats_saver = statssaver_class(artifact_directory)
+            simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
             FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
             director.direct(simulation, artifact_directory)
             elapsed, ticks, queenstats = simulator.get_results(simulation)

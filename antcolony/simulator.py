@@ -7,14 +7,14 @@ class Simulator(object):
         self.reality = reality
         self.simulation_class = simulation_class
         self.vaporizator = vaporizator
-    def simulate(self, queen, amount_of_ants):
+    def simulate(self, queen, amount_of_ants, stats_saver):
         ant_classes = queen.spawn_ants(amount_of_ants)
         ants = [ant_class(self.reality.environment_parameters) for ant_class in ant_classes]
         anthills = self.reality.world.get_anthills()
         antmoves = list(self.get_start_antmoves(ants, anthills))
         self.vaporizator.set_rate(len(ants))
         antmoves.append(self.vaporizator)
-        stats = QueenStats(self.reality, len(ants))
+        stats = QueenStats(self.reality, len(ants), stats_saver)
         return self.simulation_class(self.reality, antmoves, stats)
     def get_results(self, simulation):
         ticks = simulation.ticks
