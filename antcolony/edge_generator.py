@@ -31,7 +31,9 @@ class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
     def _get_edge_cost(self, source_point, target_point):
         base = super(RandomCoefficientEdgeGenerator, self)._get_edge_cost(source_point, target_point)
         random_coefficient = random.randint(self.min_random_coefficient, self.max_random_coefficient)
-        return base + random_coefficient
+        result = base + random_coefficient
+        assert result >= 0, 'Negative edge cost! base: %s, random_coefficient: %s' % (base, random_coefficient)
+        return result
 
 class LimitedRandomCoefficientEdgeGenerator(RandomCoefficientEdgeGenerator):
     def _generate_all(self, points, *args, **kwargs):
