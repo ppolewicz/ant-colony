@@ -36,9 +36,28 @@ class FileSavingDirectorMixin(object):
             if self.simulation.reality.world.is_resolved():
                 break
 
-class AbstractVisualizer(object):
-    #EDGE_CMAP = plt.cm.jet
+class AbstractEdgePainterMixin(object):
+    EDGE_CMAP = None
+    def _paint_edges(self, edge_objects):
+        vmin = 0
+        edge_tuples = [(edge.a_end.point, edge.b_end.point) for edge in edge_objects]
+        edges_colorlevel = [self._get_edge_colorval(edge) for edge in edge_objects]
+        vmax = max(edges_colorlevel + [float_info.min])
+        nx.draw_networkx_edges(self.g, edgelist=edge_tuples, pos=self.all_points, edge_color=edges_colorlevel, width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=vmin, edge_vmax=vmax)
+
+class PheromoneEdgePainterMixin(AbstractEdgePainterMixin):
     EDGE_CMAP = plt.cm.winter_r
+    @classmethod
+    def _get_edge_colorval(cls, edge):
+        return edge.pheromone_level()
+
+class CostEdgePainterMixin(AbstractEdgePainterMixin):
+    EDGE_CMAP = plt.cm.jet
+    @classmethod
+    def _get_edge_colorval(cls, edge):
+        return edge.cost
+
+class AbstractVisualizer(object):
     NODE_SIZE = 100 # default was 600
     def __init__(self, simulation, *args, **kwargs):
         self.simulation = simulation
@@ -79,7 +98,7 @@ class AbstractVisualizer(object):
 
     def render_world(self, world, filename_part=None):
         self._prepare_world()
-        self._draw_edges_pheromone(world.edges)
+        self._paint_edges(world.edges)
         #plt.sci(nodes)
         plt.colorbar()
         #,width=2,edge_cmap=plt.cm.Jet,with_labels=True
@@ -120,17 +139,10 @@ class AbstractVisualizer(object):
         nx.draw_networkx_nodes(g, pos=all_points, nodelist=changed_points, node_color='r', node_size=self.NODE_SIZE)
         redraw_hints.points = changed_points
 
-        self._draw_edges_pheromone(changed_edge_objects)
+        self._paint_edges(changed_edge_objects)
         self.process_visited_edges(redraw_hints, edges_to_mark)
         #plt.colorbar()
         return []
-
-    def _draw_edges_pheromone(self, edge_objects):
-        vmin = 0
-        edge_tuples = [(edge.a_end.point, edge.b_end.point) for edge in edge_objects]
-        edges_pheromone = [edge.pheromone_level() for edge in edge_objects]
-        vmax = max(edges_pheromone + [float_info.min])
-        nx.draw_networkx_edges(self.g, edgelist=edge_tuples, pos=self.all_points, edge_color=edges_pheromone, width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=vmin, edge_vmax=vmax)
 
     def process_visited_edges(self, redraw_hints, edges_to_mark):
         redraw_hints.edges = set(edges_to_mark)
@@ -163,15 +175,17 @@ class StateVisualizer(AbstractVisualizer):
             ) & redraw_hints.edges
         )
 
+
+class FileDrawingVisualizer(PheromoneEdgePainterMixin, FileSavingDirectorMixin, ResettingVisualizer):
+    pass
+
 #class AnimatingVisualizer(StateVisualizer, ScreenPresentingDirectorMixin): # this makes sense when We render each tick, but performance improvement is questionable
 
-class FileDrawingVisualizer(FileSavingDirectorMixin, ResettingVisualizer):
+class AnimatingVisualizer(PheromoneEdgePainterMixin, ScreenPresentingDirectorMixin, ResettingVisualizer):
     pass
 
-class AnimatingVisualizer(ScreenPresentingDirectorMixin, ResettingVisualizer):
-    pass
 
-class RouteDrawingVisualizer(ResettingVisualizer):
+class RouteDrawingVisualizer(PheromoneEdgePainterMixin, ResettingVisualizer):
     def process_visited_edges(self, redraw_hints, edges_to_mark, *args, **kwargs):
         super(RouteDrawingVisualizer, self).process_visited_edges(redraw_hints, edges_to_mark, *args, **kwargs)
         marked_edges = [(edge.a_end.point, edge.b_end.point) for edge in edges_to_mark]
@@ -181,6 +195,9 @@ class ScreenRouteDrawingVisualizer(ScreenPresentingDirectorMixin, RouteDrawingVi
     pass
 
 class FileRouteDrawingVisualizer(FileSavingDirectorMixin, RouteDrawingVisualizer):
+    pass
+
+class FileCostDrawingVisualizer(CostEdgePainterMixin, FileSavingDirectorMixin, ResettingVisualizer):
     pass
 
 

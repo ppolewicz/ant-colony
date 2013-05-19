@@ -12,7 +12,7 @@ from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
 from util import avg, nice_json_dump
 from vaporization import ExponentPheromoneVaporization, MultiplierPheromoneVaporization
-from vizualizer import FileDrawingVisualizer
+from vizualizer import FileCostDrawingVisualizer, FileDrawingVisualizer
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -174,6 +174,7 @@ for file_ in sorted(os.listdir(options.world_dir)):
             prepare_directory(artifact_directory)
             simulator = Simulator(reality, simulation_class, vaporizator_class)
             simulation = simulator.simulate(queen, amount_of_ants)
+            FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
             director.direct(simulation, artifact_directory)
             result = simulator.get_results(simulation)
 
