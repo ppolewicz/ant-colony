@@ -1,5 +1,6 @@
 import os.path
 import itertools
+from sys import float_info
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -21,31 +22,31 @@ class ScreenPresentingDirectorMixin(object):
         anim # documentation and examples say that this has to be like that. Suspect some garbage collector issues.
 
 class FileSavingDirectorMixin(object):
+    def __init__(self, simulation, artifact_directory=None, *args, **kwargs):
+        self.artifact_directory = artifact_directory
+        super(FileSavingDirectorMixin, self).__init__(simulation, artifact_directory, *args, **kwargs)
     def direct(self):
-        base_file_path = 'render' # TODO
         self._prepare_world()
         redraw = RedrawHints()
         stop_condition = StopCondition()
 
         for frame_number in itertools.count():
             self.animate(frame_number, stop_condition, redraw)
-            plt.savefig(os.path.join(base_file_path, "%s.png" % frame_number))
+            plt.savefig(os.path.join(self.artifact_directory, "%s.png" % frame_number))
             if self.simulation.reality.world.is_resolved():
                 break
 
 class AbstractVisualizer(object):
     #EDGE_CMAP = plt.cm.jet
     EDGE_CMAP = plt.cm.winter_r
-    NODE_SIZE = 200 # default was 600
+    NODE_SIZE = 100 # default was 600
     def __init__(self, simulation, *args, **kwargs):
         self.simulation = simulation
         self.fig = None
-        #super(xxxVisualizer, self).__init__(*args, **kwargs)
     def direct(self):
         raise NotImplementedError('You should use one of the director mixins')
-    @classmethod
-    def render_reality(cls, reality):
-        return cls.render_world(reality.world)
+    def render_reality(self, reality, filename=None):
+        return self.render_world(reality.world, filename)
     def _prepare_world(self):
         world = self.simulation.reality.world
         self.g = nx.Graph()
@@ -53,7 +54,7 @@ class AbstractVisualizer(object):
         g.add_nodes_from(world.points)
 
         edgelist = [
-            (edge.a_end.point, edge.b_end.point, min(edge.pheromone_sum()/2, 1))
+            (edge.a_end.point, edge.b_end.point, min(edge.pheromone_level(), 1))
             for edge in world.edges
         ]
         g.add_weighted_edges_from(edgelist)
@@ -61,7 +62,7 @@ class AbstractVisualizer(object):
         if self.fig is not None:
             self.fig.clear()
         else:
-            self.fig = plt.figure()
+            self.fig = plt.figure(figsize=(14, 10), dpi=72) #, dpi=80 # figsize is in inches
 
         normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.has_food()}
         nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w', node_size=self.NODE_SIZE)
@@ -74,13 +75,17 @@ class AbstractVisualizer(object):
 
         self.all_points = {point: point.coordinates for point in world.points}
 
-    def render_world(self, world):
-        nx.draw_networkx_edges(self.g, pos=self.all_points, edge_color=[c for a,b,c in self.edgelist], width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=0, edge_vmax=15)
+    def render_world(self, world, filename=None):
+        self._prepare_world()
+        self._draw_edges_pheromone(world.edges)
         #plt.sci(nodes)
         plt.colorbar()
         #,width=2,edge_cmap=plt.cm.Jet,with_labels=True
         #nx.draw(g)
-        plt.show()
+        if filename:
+            plt.savefig(os.path.join(self.artifact_directory, "%s.png" % (filename,)))
+        else:
+            plt.show()
 
     def init(self):
         return []
@@ -102,7 +107,6 @@ class AbstractVisualizer(object):
         self.pre_animate()
 
         changed_edge_objects = self.get_changed_edge_objects(changed_entities, redraw_hints)
-        changed_edges = [(edge.a_end.point, edge.b_end.point) for edge in changed_edge_objects]
 
         changed_point_objects = [point for point in changed_entities if isinstance(point, AbstractPoint)]
 
@@ -111,13 +115,17 @@ class AbstractVisualizer(object):
         nx.draw_networkx_nodes(g, pos=all_points, nodelist=changed_points, node_color='r', node_size=self.NODE_SIZE)
         redraw_hints.points = changed_points
 
-        vmin = 0
-        #vmax = 1
-        vmax = max([edge.pheromone_sum()/2 for edge in changed_edge_objects] + [0.000001])
-        nx.draw_networkx_edges(g, edgelist=changed_edges, pos=all_points, edge_color=[edge.pheromone_sum()/2 for edge in changed_edge_objects], width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=vmin, edge_vmax=vmax)
+        self._draw_edges_pheromone(changed_edge_objects)
         self.process_visited_edges(redraw_hints, edges_to_mark)
         #plt.colorbar()
         return []
+
+    def _draw_edges_pheromone(self, edge_objects):
+        vmin = 0
+        edge_tuples = [(edge.a_end.point, edge.b_end.point) for edge in edge_objects]
+        edges_pheromone = [edge.pheromone_level() for edge in edge_objects]
+        vmax = max(edges_pheromone + [float_info.min])
+        nx.draw_networkx_edges(self.g, edgelist=edge_tuples, pos=self.all_points, edge_color=edges_pheromone, width=4, edge_cmap=self.EDGE_CMAP, edge_vmin=vmin, edge_vmax=vmax)
 
     def process_visited_edges(self, redraw_hints, edges_to_mark):
         redraw_hints.edges = set(edges_to_mark)

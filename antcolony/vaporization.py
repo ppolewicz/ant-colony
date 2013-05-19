@@ -6,13 +6,12 @@ class AbstractPheromoneVaporization(AbstractSimulationEvent):
     def __init__(self, ant_count, end_time=PERIOD):
         self.end_time = end_time
         self.ant_count = ant_count
-    def process_end(self, world, stats):
+    def process_end(self, reality, stats):
         changed = []
-        avg_pheromone = world.get_average_pheromone_level()
-        max_pheromone = world.get_max_pheromone_level()
+        avg_pheromone = reality.world.get_average_pheromone_level()
+        max_pheromone = reality.world.get_max_pheromone_level()
         if max_pheromone/(avg_pheromone or 1) >= self.TRIGGER_LEVEL:
-            print 'Vaporization'
-            for edge in world.edges:
+            for edge in reality.world.edges:
                 for edge_end in (edge.a_end, edge.b_end):
                     new = self.compute_new_value(edge_end.pheromone_level)
                     if edge_end.pheromone_level!=new:

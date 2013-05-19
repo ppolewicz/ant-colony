@@ -17,35 +17,34 @@ class AbstractAntMove(AbstractSimulationEvent):
         self.trip_stats = trip_stats
     def process_start(self):
         self.origin.drop_pheromone(self.pheromone_to_drop)
-        #print "1 dropping %s pheromone on %s" % (self.pheromone_to_drop, self.origin)
         return frozenset((self.origin.edge, self.origin.point))
-    def process_end(self, world, stats):
+    def process_end(self, reality, stats):
         changed = [self.destination.edge]
         self.trip_stats.edge_visited(self.destination.edge)
         self.destination.drop_pheromone(self.pheromone_to_drop)
-        #print "2 dropping %s pheromone on %s" % (self.pheromone_to_drop, self.destination)
-        if not self.destination.point.is_anthill() and self.destination.point.food > 0 and not self.ant.food:
+        if not self.destination.point.is_anthill() and self.destination.point.food > 0 and not self.ant.food: # ant has found the food
             changed.append(self.destination.point)
             self.trip_stats.food_found()
             self.destination.point.food -= 1
             self.ant.food += 1
             stats.food_found(self.trip_stats)
             stats.present()
-        elif self.destination.point.is_anthill():
-            if self.ant.food:
+        elif self.destination.point.is_anthill(): # ant has returned to the anthill
+            if self.ant.food: # with food
                 changed.append(self.destination.point)
                 self.destination.point.food += self.ant.food
                 self.trip_stats.back_home()
                 new_ant = self.ant.__class__(self.ant.world_parameters)
-                return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=world.elapsed_time), frozenset(changed)
-            else:
+                return AntRestartMove(new_ant, anthill=DummyEdgeEnd(self.destination.point), end_time=reality.world.elapsed_time), frozenset(changed)
+            else: # with no food
                 self.trip_stats.reset_route()
         new_destination_edge, pheromone_to_drop = self.ant.tick(self.destination.point)
         assert new_destination_edge in (end.edge for end in self.destination.point.edge_ends), 'Illegal ant move'
+        assert reality.environment_parameters.min_pheromone_dropped_by_ant <= pheromone_to_drop <= reality.environment_parameters.max_pheromone_dropped_by_ant, 'Illegal ant pheromone drop: %s' % (repr(pheromone_to_drop),)
         self.trip_stats.normal_move(new_destination_edge.cost)
         new_destination = new_destination_edge.get_other_end_by_point(self.destination.point)
         origin = new_destination_edge.get_other_end(new_destination)
-        end_time = world.elapsed_time + new_destination_edge.cost
+        end_time = reality.world.elapsed_time + new_destination_edge.cost
         return AntMove(
             ant=self.ant,
             origin=origin,

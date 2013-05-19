@@ -15,18 +15,18 @@ class BasicSimulationDirector(AbstractSimulationDirector):
                 break
 
 class FileDrawingVisualizerSimulationDirector(AbstractSimulationDirector):
-    def direct(self, simulation):
-        FileDrawingVisualizer(simulation).direct()
+    def direct(self, simulation, artifact_directory):
+        FileDrawingVisualizer(simulation, artifact_directory).direct()
 
 class ScreenRouteDrawingVisualizerSimulationDirector(AbstractSimulationDirector):
-    def direct(self, simulation):
+    def direct(self, simulation, artifact_directory):
         ScreenRouteDrawingVisualizer(simulation).direct()
 
 class FileRouteDrawingVisualizerSimulationDirector(AbstractSimulationDirector):
-    def direct(self, simulation):
-        FileRouteDrawingVisualizer(simulation).direct()
+    def direct(self, simulation, artifact_directory):
+        FileRouteDrawingVisualizer(simulation, artifact_directory).direct()
 
 class AnimatingVisualizerSimulationDirector(AbstractSimulationDirector):
-    def direct(self, simulation):
+    def direct(self, simulation, artifact_directory):
         AnimatingVisualizer(simulation).direct()
 

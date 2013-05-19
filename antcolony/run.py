@@ -7,11 +7,12 @@ import ant2
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from simulation import MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
+from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulator import Simulator
-from simulation_director import BasicSimulationDirector, AnimatingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
-from util import avg
+from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
+from util import avg, nice_json_dump
 from vaporization import ExponentPheromoneVaporization, MultiplierPheromoneVaporization
+from vizualizer import FileDrawingVisualizer
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -33,6 +34,7 @@ class BadConfigurationException(Exception):
 
 options = DummyClass()
 options.world_dir = 'worlds'
+options.root_artifact_directory = 'results'
 
 ##########################################################################################################################################################
 
@@ -60,12 +62,12 @@ options.force_initial_food = 1500
 #options.queen = 'PurelyRandom'
 options.queen = 'Ant2'
 
-# amount of ants
-options.amount_of_ants = 1
-#options.amount_of_ants = 20
+# amounts of ants
+options.amounts_of_ants = [1]
+#options.amounts_of_ants = [1, 20, 100]
 
 # amount of tests performed on a (queen, world) pair
-options.how_many_tests_per_queenworld = 1
+options.how_many_tests_per_queenworld = 3
 
 # director
 #options.director = 'Basic'
@@ -78,6 +80,7 @@ options.director = 'ScreenRouteDrawingVisualizer'
 #options.simulation_granularity = 'Tick'
 #options.simulation_granularity = 'Spawn'
 options.simulation_granularity = 'MultiSpawn'
+#options.simulation_granularity = 'LastSpawn'
 
 # what should be the mode of pheromone vaporization
 #options.vaporizator_mode = 'Multiplier' # fair
@@ -88,7 +91,7 @@ options.vaporizator_mode = 'Exponent' # vaporize edges with high pheromone conce
 
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
-    for x in xrange(options.generate_worlds):
+    for i in xrange(options.generate_worlds):
         chessboard_size = 20
         number_of_points = 10
         if options.world_type=='Chessboard':
@@ -101,7 +104,8 @@ if options.generate_worlds>0:
             reality = SlightlyRandomizedRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         else:
             raise BadConfigurationException('Bad world type configuration')
-        json.dump(reality.world.to_json(), open(os.path.join(options.world_dir, 'world-%s.json' % (x,)), 'w'))
+        filepath = os.path.join(options.world_dir, '%sWorld-%s.json' % (options.world_type, i,))
+        nice_json_dump(reality.world.to_json(), filepath)
 
 if options.simulation_granularity=='Tick':
     simulation_class = TickStepSimulation
@@ -109,6 +113,8 @@ elif options.simulation_granularity=='Spawn':
     simulation_class = SpawnStepSimulation
 elif options.simulation_granularity=='MultiSpawn':
     simulation_class = MultiSpawnStepSimulation
+elif options.simulation_granularity=='LastSpawn':
+    simulation_class = LastSpawnStepSimulation
 else:
     raise BadConfigurationException('Bad simulation granularity configuration')
 
@@ -126,8 +132,9 @@ elif options.director == 'AnimatingVisualizer':
 elif options.director == 'ScreenRouteDrawingVisualizer':
     director = ScreenRouteDrawingVisualizerSimulationDirector()
 elif options.director == 'FileRouteDrawingVisualizer':
-    prepare_directory('render')
     director = FileRouteDrawingVisualizerSimulationDirector()
+elif options.director == 'FileDrawingVisualizer':
+    director = FileDrawingVisualizerSimulationDirector()
 else:
     raise BadConfigurationException('Bad simulation granularity configuration')
 
@@ -136,8 +143,10 @@ force_initial_food = options.force_initial_food
 for file_ in sorted(os.listdir(options.world_dir)):
     file_ = os.path.join(options.world_dir, file_)
     assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (options.world_dir, file_)
-    json_world = json.load(open(file_, 'r'))
+    with open(file_, 'r') as f:
+        json_world = json.load(f)
     reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
+    world_name = os.path.splitext(os.path.basename(file_))[0]
     if force_initial_food:
         reality.world.reset(force_initial_food)
 
@@ -148,21 +157,44 @@ for file_ in sorted(os.listdir(options.world_dir)):
     else:
         raise BadConfigurationException('Bad queen configuration')
 
-    for options.amount_of_ants in [1]:
+    for run_id in xrange(options.how_many_tests_per_queenworld):
+        for amount_of_ants in options.amounts_of_ants:
+            artifact_directory = os.path.join(
+                options.root_artifact_directory,
+                '%(world_name)s_%(queen_name)s_%(amount_of_ants)s_%(run_id)s' % {
+                    'world_name': world_name,
+                    'queen_name': queen.get_name(),
+                    'amount_of_ants': amount_of_ants,
+                    'run_id': run_id,
+                },
+            )
+            #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
+            prepare_directory(artifact_directory)
+            simulator = Simulator(reality, simulation_class, vaporizator_class)
+            simulation = simulator.simulate(queen, amount_of_ants)
+            director.direct(simulation, artifact_directory)
+            result = simulator.get_results(simulation)
 
-        simulator = Simulator(reality, simulation_class, vaporizator_class)
-        simulation = simulator.simulate(queen, options.amount_of_ants)
-        #Visualizer.render_reality(reality)
-        director.direct(simulation)
-        #simulator.run_simulation(simulation)
-        result = simulator.get_results(simulation)
-        print 'result', repr(result)
-        #exit(1)
+            # this used to agregate data from several runs
+            results = [result]
+            elapsed = avg([elapsed for (elapsed, ticks) in results])
+            elapsed_balanced = elapsed / amount_of_ants
+            ticks = avg([ticks for (elapsed, ticks) in results])
 
-        #results = [simulator.run(queen, options.amount_of_ants, reality) for i in xrange(options.how_many_tests_per_queenworld)]
-        results = [result]
-        elapsed = avg([elapsed for (elapsed, ticks) in results]) / options.amount_of_ants
-        ticks = avg([ticks for (elapsed, ticks) in results])
-        print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, options.queen, options.amount_of_ants, ticks, elapsed)
+            data = {
+                'world': world_name,
+                'world_filepath': file_,
+                'queen': queen.get_name(),
+                'ants': amount_of_ants,
+                'ticks': ticks,
+                'cost': elapsed,
+                'cost_balanced': elapsed_balanced,
+                'total_food': reality.world.get_total_food(),
+            }
+            nice_json_dump(reality.world.to_json(), os.path.join(artifact_directory, os.path.basename(file_)))
+            FileDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'end')
+            nice_json_dump(data, os.path.join(artifact_directory, 'results.json'))
+            print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
+            simulator.reset()
 
 

@@ -68,7 +68,8 @@ class World(object):
             edges.add(e)
         return cls(points, edges)
     def get_average_pheromone_level(self):
-        return avg([edge.pheromone_sum() for edge in self.edges]) / 2
+        return avg([edge.pheromone_level() for edge in self.edges])
     def get_max_pheromone_level(self):
-        return max([edge.pheromone_sum() / 2 for edge in self.edges]) # simplification
-
+        return max([edge.pheromone_level() for edge in self.edges]) # simplification
+    def get_total_food(self):
+        return sum([point.food for point in self.points])

@@ -1,20 +1,16 @@
 import heapq
 
 class AbstractSimulation(object):
-    def __init__(self, reality, antmoves, stats, artifact_directory=None):
+    def __init__(self, reality, antmoves, stats):
         self.reality = reality
         self.antmoves = antmoves
         heapq.heapify(antmoves)
         self.stats = stats
         self.ticks = 0
-        self.artifact_directory = artifact_directory
     def tick(self):
         ant_move = heapq.heappop(self.antmoves)
         self.reality.world.elapsed_time = ant_move.end_time # simulation is now at the point of ant_move.ant arriving at ant_move.destination
-        #print 'processing ant_move', ant_move.end_time
-        #print '[%f] %s is moving to %s, %s' % (self.reality.world.elapsed_time, ant_move.ant, ant_move.destination.point, ant_move.ant.food)
-        #print sum([food_point.food for food_point in self.reality.world.get_food_points()])
-        new_antmove, changed_items_end = ant_move.process_end(self.reality.world, self.stats)
+        new_antmove, changed_items_end = ant_move.process_end(self.reality, self.stats)
         assert not self.reality.world.elapsed_time > ant_move.end_time
         changed_items_start = new_antmove.process_start()
         assert changed_items_start is not None, new_antmove
@@ -55,4 +51,9 @@ class SpawnStepSimulation(MultiSpawnStepSimulation):
     def __init__(self, reality, *args, **kwargs):
         super(SpawnStepSimulation, self).__init__(reality, *args, **kwargs)
         self.spawn_amount = 1
+
+class LastSpawnStepSimulation(MultiSpawnStepSimulation):
+    def __init__(self, reality, *args, **kwargs):
+        super(LastSpawnStepSimulation, self).__init__(reality, *args, **kwargs)
+        self.spawn_amount = reality.world.get_total_food()
 
