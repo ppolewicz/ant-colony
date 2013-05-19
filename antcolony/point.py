@@ -3,6 +3,7 @@ import math
 class AbstractPoint(object):
     JSON_KEY_COORDINATES = 'coordinates'
     JSON_KEY_IS_ANTHILL = 'is_anthill'
+    IS_FOODPOINT = False
     def __init__(self, coordinates, *args, **kwargs):
         self.coordinates = coordinates
         self.edge_ends = set()
@@ -10,6 +11,8 @@ class AbstractPoint(object):
         self.edge_ends.add(edge)
     def is_anthill(self):
         return self.anthill
+    def is_foodpoint(self):
+        return self.IS_FOODPOINT
     def has_food(self):
         return self.food > 0
     def get_distance_to(self, other):
@@ -40,6 +43,7 @@ class AnthillPoint(AbstractPoint):
 
 class FoodPoint(AbstractPoint):
     JSON_KEY_FOOD = 'food'
+    IS_FOODPOINT = True
     def __init__(self, coordinates, food, *args, **kwargs):
         self.anthill = False
         self.food = food

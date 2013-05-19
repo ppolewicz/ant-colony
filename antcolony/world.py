@@ -17,7 +17,7 @@ class World(object):
     def _save_initial_food(self):
         self.initial_food = [(point, point.food) for point in self.get_food_points()]
     def is_resolved(self):
-        return not self.get_food_points()
+        return sum([point.food for point in self.get_food_points()]) <= 0
     def get_anthills(self):
         return [point for point in self.points if point.is_anthill()]
     def get_anthill(self):
@@ -25,7 +25,7 @@ class World(object):
         assert len(anthills)==1, 'multiple anthills are not fully supported'
         return anthills[0]
     def get_food_points(self):
-        return [point for point in self.points if not point.is_anthill() and point.food > 0]
+        return [point for point in self.points if point.is_foodpoint()]
     def get_ordinary_points(self):
         return [point for point in self.points if not point.is_anthill() and not point.food > 0]
     def __repr__(self):

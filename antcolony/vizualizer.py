@@ -64,7 +64,7 @@ class AbstractVisualizer(object):
         else:
             self.fig = plt.figure(figsize=(14, 10), dpi=72) #, dpi=80 # figsize is in inches
 
-        normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.has_food()}
+        normal_points = {point: point.coordinates for point in world.points if not point.is_anthill() and not point.is_foodpoint()}
         nx.draw_networkx_nodes(g, pos=normal_points, nodelist=normal_points.keys(), node_color='w', node_size=self.NODE_SIZE)
 
         food_points = {point: point.coordinates for point in world.get_food_points()}
