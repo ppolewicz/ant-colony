@@ -24,6 +24,7 @@ class DummyEdgeEnd(AbstractEdgeEnd):
 class Edge(object):
     JSON_KEY_ENDPOINTS = 'endpoints'
     JSON_KEY_COST = 'cost'
+    JSON_KEY_PHEROMONE = 'pheromone'
     def __init__(self, point_A, point_B, cost):
         a_point, b_point = sorted([point_A, point_B])
         assert a_point!=b_point, a_point
@@ -54,6 +55,8 @@ class Edge(object):
             assert False, "This edge's neither point is the one that was supplied"
     def pheromone_sum(self):
         return self.a_end.pheromone_level + self.b_end.pheromone_level
+    def pheromone_level(self):
+        return self.pheromone_sum() / 2
     def register_with_points(self):
         for end in self.a_end, self.b_end:
             end.point.add_edge_end(end)
@@ -67,12 +70,15 @@ class Edge(object):
                 self.b_end.point.coordinates,
             ),
             self.JSON_KEY_COST: self.cost,
+            self.JSON_KEY_PHEROMONE: self.pheromone_level(),
         }
     @classmethod
     def from_json(cls, json_edge, point_index):
         cost = json_edge[cls.JSON_KEY_COST]
         point_A, point_B = [point_index[tuple(coordinate)] for coordinate in json_edge[cls.JSON_KEY_ENDPOINTS]]
-        return cls(point_A, point_B, cost)
+        obj = cls(point_A, point_B, cost)
+        obj.a_end.pheromone_level = obj.b_end.pheromone_level = json_edge[cls.JSON_KEY_PHEROMONE]
+        return obj
 
 if __name__=='__main__':
     from pprint import pprint
