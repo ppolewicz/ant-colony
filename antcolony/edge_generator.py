@@ -35,10 +35,10 @@ class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
         assert result >= 0, 'Negative edge cost! base: %s, random_coefficient: %s' % (base, random_coefficient)
         return result
 
-class LimitedRandomCoefficientEdgeGenerator(RandomCoefficientEdgeGenerator):
+class LimitMixin(object):
     def _generate_all(self, points, *args, **kwargs):
-        min_hint_edges_from_point = 2
-        max_hint_edges_from_point = 3
+        min_hint_edges_from_point = 1
+        max_hint_edges_from_point = 2
         existing_edges = set()
         for source_point in points:
             temporary_edges = []
@@ -53,6 +53,12 @@ class LimitedRandomCoefficientEdgeGenerator(RandomCoefficientEdgeGenerator):
             for edge in temporary_edges[:random.randint(min_hint_edges_from_point, max_hint_edges_from_point)]:
                 existing_edges.add(edge)
                 yield edge
+
+class LimitedRandomCoefficientEdgeGenerator(LimitMixin, RandomCoefficientEdgeGenerator):
+    pass
+
+class LimitedEdgeGenerator(LimitMixin, SimpleEdgeGenerator):
+    pass
 
 class ChessboardEdgeGenerator(SimpleEdgeGenerator):
     def _get_candidates(self, source_coordinates):

@@ -1,5 +1,5 @@
 from point_generator import SimplePointGenerator, ChessboardPointGenerator
-from edge_generator import SimpleEdgeGenerator, LimitedRandomCoefficientEdgeGenerator, ChessboardEdgeGenerator, CrossedChessboardEdgeGenerator
+from edge_generator import ChessboardEdgeGenerator, CrossedChessboardEdgeGenerator, LimitedEdgeGenerator, LimitedRandomCoefficientEdgeGenerator
 from world_generator import SimpleWorldGenerator
 
 class AbstractWorldGeneratorFactory(object):
@@ -13,7 +13,8 @@ class SimpleWorldGeneratorFactory(AbstractWorldGeneratorFactory):
     @classmethod
     def create_world_generator(cls, number_of_dimensions, number_of_points):
         point_generator = SimplePointGenerator(number_of_dimensions, 0, 100)
-        edge_generator = SimpleEdgeGenerator()
+        #edge_generator = SimpleEdgeGenerator()
+        edge_generator = LimitedEdgeGenerator()
         return SimpleWorldGenerator(number_of_dimensions, point_generator, edge_generator, number_of_points)
 
 class SlightlyRandomizedWorldGeneratorFactory(AbstractWorldGeneratorFactory):
