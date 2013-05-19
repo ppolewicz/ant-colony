@@ -11,7 +11,7 @@ from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnS
 from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
 from util import avg, nice_json_dump
-from vaporization import ExponentPheromoneVaporization, MultiplierPheromoneVaporization
+from vaporization import ExponentPheromoneVaporization, LogarithmPheromoneVaporization, MultiplierPheromoneVaporization
 from vizualizer import FileCostDrawingVisualizer, FileDrawingVisualizer
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
@@ -86,7 +86,8 @@ options.simulation_granularity = 'MultiSpawn'
 
 # what should be the mode of pheromone vaporization
 #options.vaporizator_mode = 'Multiplier' # fair
-options.vaporizator_mode = 'Exponent' # vaporize edges with high pheromone concentration faster
+#options.vaporizator_mode = 'Exponent' # probably broken
+options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration faster than the ones withg low concentration
 
 ##########################################################################################################################################################
 
@@ -120,12 +121,15 @@ elif options.simulation_granularity=='LastSpawn':
 else:
     raise BadConfigurationException('Bad simulation granularity configuration')
 
-if options.vaporizator_mode=='Multiplier':
-    vaporizator_class = MultiplierPheromoneVaporization
-elif options.vaporizator_mode=='Exponent':
+if options.vaporizator_mode=='Exponent':
     vaporizator_class = ExponentPheromoneVaporization
+elif options.vaporizator_mode=='Logarithm':
+    vaporizator_class = LogarithmPheromoneVaporization
+elif options.vaporizator_mode=='Multiplier':
+    vaporizator_class = MultiplierPheromoneVaporization
 else:
     raise BadConfigurationException('Bad vaporizator mode configuration')
+vaporizator = vaporizator_class(trigger_level=50)
 
 if options.director == 'Basic':
     director = BasicSimulationDirector()
@@ -172,7 +176,7 @@ for file_ in sorted(os.listdir(options.world_dir)):
             )
             #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
             prepare_directory(artifact_directory)
-            simulator = Simulator(reality, simulation_class, vaporizator_class)
+            simulator = Simulator(reality, simulation_class, vaporizator)
             simulation = simulator.simulate(queen, amount_of_ants)
             FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
             director.direct(simulation, artifact_directory)
