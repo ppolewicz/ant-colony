@@ -13,6 +13,8 @@ class World(object):
         self.points = points
         self.edges = edges
         self.elapsed_time = 0.0
+        self._save_initial_food()
+    def _save_initial_food(self):
         self.initial_food = [(point, point.food) for point in self.get_food_points()]
     def is_resolved(self):
         return not self.get_food_points()
@@ -36,6 +38,8 @@ class World(object):
                 point.food = food
             else:
                 point.food = force_initial_food
+        if force_initial_food is not None:
+            self._save_initial_food()
         self.elapsed_time = 0.0
     def to_json(self):
         points = {}
