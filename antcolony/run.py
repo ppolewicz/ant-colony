@@ -25,14 +25,16 @@ def prepare_directory(path):
             if os.path.isfile(file_path) and not file_path.startswith('.py'):
                 os.unlink(file_path)
 
-class DummyClass(object):
-    pass
+class Options(object):
+    EXCLUDED_FROM_JSON = set(['EXCLUDED', 'to_json'])
+    def to_json(self):
+        return {k: v for k, v in self.__dict__ if k not in self.EXCLUDED_FROM_JSON}
 
 class BadConfigurationException(Exception):
     pass
 
 
-options = DummyClass()
+options = Options()
 options.world_dir = 'worlds'
 options.root_artifact_directory = 'results'
 
