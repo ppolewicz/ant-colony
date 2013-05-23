@@ -60,6 +60,8 @@ class QueenStats(object):
                 'last_cost': self.last_cost,
                 'pheromone_ratio': pheromone_ratio,
                 'best_finding_cost': self.best_finding_cost,
+                'fl_avg_cost': fl_avg_cost,
+                'fl_avg_moves': fl_avg_moves,
             }
         )
         print 'found: %d, best: %.3f, avg.ph.: %.3f, max.ph.: %.3f [%.3f], fl.avg.moves: %d, fl.avg.cost: %.3f, last_cost: %s, world.time: %d' % (
