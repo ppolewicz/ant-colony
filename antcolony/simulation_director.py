@@ -4,11 +4,11 @@ from vizualizer import FileRouteDrawingVisualizer
 from vizualizer import ScreenRouteDrawingVisualizer
 
 class AbstractSimulationDirector(object):
-    def direct(self, simulation):
+    def direct(self, simulation, artifact_directory):
         raise NotImplementedError()
 
 class BasicSimulationDirector(AbstractSimulationDirector):
-    def direct(self, simulation):
+    def direct(self, simulation, artifact_directory):
         while 1:
             changed, is_resolved, edges_to_mark = simulation.advance()
             if is_resolved:
