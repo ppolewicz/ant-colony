@@ -39,6 +39,13 @@ class Edge(object):
         return hash((self.a_end.point, self.b_end.point))
     def __repr__(self):
         return 'Edge{%s <[%s]--[%s]> %s (%s)}' % (self.a_end.point, self.a_end.pheromone_level, self.b_end.pheromone_level, self.b_end.point, self.cost)
+    def get_end_by_point(self, point):
+        if point==self.a_end.point:
+            return self.a_end
+        elif point==self.b_end.point:
+            return self.b_end
+        else:
+            assert False, "This edge's neither point is the one that was supplied"
     def get_other_end(self, end):
         if end.point==self.a_end.point:
             return self.b_end
