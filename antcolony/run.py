@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
-import os
 import json
+import os
+import time
 
 import ant
 import ant2
@@ -62,12 +63,22 @@ options.force_initial_food = 1500
 #options.force_initial_food = None # World's default
 
 # queen
-#options.queen = 'PurelyRandom'
-options.queen = 'Ant2'
+options.queens = []
+#options.queens += ['PurelyRandom']                # purely random ant (expect horrible performance)
+options.queens += ['Ant2.BasicAnt']               # Basic ant
+options.queens += ['Ant2.PathShorteningAnt']      # BasicAnt that eagerly eliminates cycles in it's return path
+options.queens += ['Ant2.ShortcutAnt']            # BasicAnt that tries to find a shortcut to anthill """
+options.queens += ['Ant2.AdvancedAnt']            # ant that eagerly eliminates cycles in it's return path and tries to find a shortcut to anthill
+options.queens += ['Ant2.AdvancedQuadraticAnt']   # AdvancedAnt which squares pheromone before using roulette
+options.queens += ['Ant2.AdvancedRootAnt']        # AdvancedAnt which square roots pheromone before using roulette
+options.queens += ['Ant2.AdvancedBadLuckAnt']     # AdvancedAnt which picks a random candidate edge instead of using roulette
+options.queens += ['Ant2.AdvancedIgnorantAnt']    # AdvancedAnt which doesn't ignore a point which was rejected previously
+options.queens += ['Ant2.LinearPenaltyAnt']       # AdvancedAnt which applies only proportional length coefficient pheromone drop (instead of exponent)
+options.queens += ['Ant2.HalfLengthPenaltyExponent']
 
 # amounts of ants
-options.amounts_of_ants = [1]
-#options.amounts_of_ants = [1, 20, 100]
+#options.amounts_of_ants = [1]
+options.amounts_of_ants = [1, 8, 20]
 
 # amount of tests performed on a (queen, world) pair
 options.how_many_tests_per_queenworld = 3
@@ -84,6 +95,10 @@ options.director = 'ScreenRouteDrawingVisualizer'
 #options.simulation_granularity = 'Spawn'
 options.simulation_granularity = 'MultiSpawn'
 #options.simulation_granularity = 'LastSpawn'
+
+# this only makes sense on MultiSpawn
+#options.force_spawn_amount = None
+options.force_spawn_amount = 20000
 
 # what should be the mode of pheromone vaporization
 #options.vaporizator_mode = 'Multiplier' # fair
@@ -116,12 +131,15 @@ if options.generate_worlds>0:
         filepath = os.path.join(options.world_dir, '%sWorld-%s.json' % (options.world_type, i,))
         nice_json_dump(reality.world.to_json(), filepath)
 
-if options.simulation_granularity=='Tick':
+if options.simulation_granularity=='MultiSpawn':
+    simulation_class = MultiSpawnStepSimulation
+    force_spawn_amount = options.force_spawn_amount
+elif options.force_spawn_amount is not None:
+    raise BadConfigurationException('force_spawn_amount is only supported for MultiSpawn simulation granularity')
+elif options.simulation_granularity=='Tick':
     simulation_class = TickStepSimulation
 elif options.simulation_granularity=='Spawn':
     simulation_class = SpawnStepSimulation
-elif options.simulation_granularity=='MultiSpawn':
-    simulation_class = MultiSpawnStepSimulation
 elif options.simulation_granularity=='LastSpawn':
     simulation_class = LastSpawnStepSimulation
 else:
@@ -160,63 +178,81 @@ else:
     raise BadConfigurationException('Bad statssaver extension configuration')
 
 force_initial_food = options.force_initial_food
+for queen_name in options.queens:
+    for file_ in sorted(os.listdir(options.world_dir)):
+        file_ = os.path.join(options.world_dir, file_)
+        assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (options.world_dir, file_)
+        with open(file_, 'r') as f:
+            json_world = json.load(f)
+        reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
+        world_name = os.path.splitext(os.path.basename(file_))[0]
+        if force_initial_food:
+            reality.world.reset(force_initial_food)
 
-for file_ in sorted(os.listdir(options.world_dir)):
-    file_ = os.path.join(options.world_dir, file_)
-    assert os.path.isfile(file_), 'unidentified object in %s/: %s' % (options.world_dir, file_)
-    with open(file_, 'r') as f:
-        json_world = json.load(f)
-    reality = JsonRealityDeserializer.from_json_world(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, json_world=json_world)
-    world_name = os.path.splitext(os.path.basename(file_))[0]
-    if force_initial_food:
-        reality.world.reset(force_initial_food)
+        if queen_name == 'PurelyRandom':
+            queen = BasicQueen(ant.PurelyRandomAnt)
+        elif queen_name.startswith('Ant2.'):
+            antclass = ant2.__dict__[queen_name[5:]]
+            queen = BasicQueen(antclass)
+        else:
+            raise BadConfigurationException('Bad queen configuration')
 
-    if options.queen == 'PurelyRandom':
-        queen = BasicQueen(ant.PurelyRandomAnt)
-    elif options.queen == 'Ant2':
-        queen = BasicQueen(ant2.BasicAnt)
-    else:
-        raise BadConfigurationException('Bad queen configuration')
+        for run_id in xrange(options.how_many_tests_per_queenworld):
+            for amount_of_ants in options.amounts_of_ants:
+                artifact_directory = os.path.join(
+                    options.root_artifact_directory,
+                    '%(world_name)s_%(queen_name)s_%(amount_of_ants)s_%(run_id)s' % {
+                        'world_name': world_name,
+                        'queen_name': queen.get_name(),
+                        'amount_of_ants': amount_of_ants,
+                        'run_id': run_id,
+                    },
+                )
 
-    for run_id in xrange(options.how_many_tests_per_queenworld):
-        for amount_of_ants in options.amounts_of_ants:
-            artifact_directory = os.path.join(
-                options.root_artifact_directory,
-                '%(world_name)s_%(queen_name)s_%(amount_of_ants)s_%(run_id)s' % {
-                    'world_name': world_name,
-                    'queen_name': queen.get_name(),
-                    'amount_of_ants': amount_of_ants,
-                    'run_id': run_id,
-                },
-            )
-            #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
-            prepare_directory(artifact_directory)
-            simulator = Simulator(reality, simulation_class, vaporizator)
-            stats_saver = statssaver_class(artifact_directory)
-            simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
-            FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
-            director.direct(simulation, artifact_directory)
-            elapsed, ticks, queenstats = simulator.get_results(simulation)
+                #job = {}
+                #job['options'] = options
+                #job['queen'] = queen
+                #job['run_id'] = run_id
+                #job['amount_of_ants'] = amount_of_ants
 
-            # this used to agregate data from several runs
-            elapsed_balanced = elapsed / amount_of_ants
+                #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
+                if os.path.exists(artifact_directory):
+                    continue
+                    pass
+                prepare_directory(artifact_directory)
+                simulator = Simulator(reality, simulation_class, vaporizator)
+                stats_saver = statssaver_class(artifact_directory)
+                simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
+                if force_spawn_amount:
+                    simulation.spawn_amount = force_spawn_amount
+                FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
 
-            data = {
-                'world': world_name,
-                'world_filepath': file_,
-                'queen': queen.get_name(),
-                'ants': amount_of_ants,
-                'ticks': ticks,
-                'cost': elapsed,
-                'cost_balanced': elapsed_balanced,
-                'total_food': reality.world.get_total_food(),
-                'best_finding_cost': queenstats.best_finding_cost,
-                'moves_leading_to_food_being_found': queenstats.moves_leading_to_food_being_found,
-            }
-            nice_json_dump(reality.world.to_json(), os.path.join(artifact_directory, os.path.basename(file_)))
-            FileDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'end')
-            nice_json_dump(data, os.path.join(artifact_directory, 'results.json'))
-            print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
-            simulator.reset()
+                start_time = time.time()
+                director.direct(simulation, artifact_directory)
+                total_real_time = time.time() - start_time
+                elapsed, ticks, queenstats = simulator.get_results(simulation)
+
+                # this used to agregate data from several runs
+                elapsed_balanced = elapsed / amount_of_ants
+
+                data = {
+                    'world': world_name,
+                    'world_filepath': file_,
+                    'queen': queen.get_name(),
+                    'ants': amount_of_ants,
+                    'ticks': ticks,
+                    'cost': elapsed,
+                    'cost_balanced': elapsed_balanced,
+                    'total_food': reality.world.get_total_food(),
+                    'best_finding_cost': queenstats.best_finding_cost,
+                    'moves_leading_to_food_being_found': queenstats.moves_leading_to_food_being_found,
+                    'total_real_time': total_real_time,
+                }
+                nice_json_dump(reality.world.to_json(), os.path.join(artifact_directory, os.path.basename(file_)))
+                FileDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'end')
+                nice_json_dump(data, os.path.join(artifact_directory, 'results.json'))
+                print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
+                simulator.reset()
+                exit()
 
 
