@@ -1,0 +1,293 @@
+{
+    "edges": [
+        {
+            "cost": 53.31041174104736,
+            "endpoints": [
+                [
+                    58,
+                    74
+                ],
+                [
+                    9,
+                    53
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 26.570660511172846,
+            "endpoints": [
+                [
+                    69,
+                    24
+                ],
+                [
+                    44,
+                    15
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 16.97056274847714,
+            "endpoints": [
+                [
+                    56,
+                    3
+                ],
+                [
+                    44,
+                    15
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 24.698178070456937,
+            "endpoints": [
+                [
+                    69,
+                    24
+                ],
+                [
+                    56,
+                    3
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 68.62215385719105,
+            "endpoints": [
+                [
+                    9,
+                    53
+                ],
+                [
+                    56,
+                    3
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 26.68332812825267,
+            "endpoints": [
+                [
+                    18,
+                    9
+                ],
+                [
+                    44,
+                    15
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 28.844410203711913,
+            "endpoints": [
+                [
+                    69,
+                    24
+                ],
+                [
+                    93,
+                    8
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 6.324555320336759,
+            "endpoints": [
+                [
+                    56,
+                    80
+                ],
+                [
+                    58,
+                    74
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 44.91102314577124,
+            "endpoints": [
+                [
+                    18,
+                    9
+                ],
+                [
+                    9,
+                    53
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 37.33630940518894,
+            "endpoints": [
+                [
+                    93,
+                    8
+                ],
+                [
+                    56,
+                    3
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 35.22782990761707,
+            "endpoints": [
+                [
+                    58,
+                    74
+                ],
+                [
+                    93,
+                    70
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 27.892651361962706,
+            "endpoints": [
+                [
+                    2,
+                    80
+                ],
+                [
+                    9,
+                    53
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 38.47076812334269,
+            "endpoints": [
+                [
+                    18,
+                    9
+                ],
+                [
+                    56,
+                    3
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 54.0,
+            "endpoints": [
+                [
+                    2,
+                    80
+                ],
+                [
+                    56,
+                    80
+                ]
+            ],
+            "pheromone": 0.0
+        },
+        {
+            "cost": 51.19570294468082,
+            "endpoints": [
+                [
+                    69,
+                    24
+                ],
+                [
+                    58,
+                    74
+                ]
+            ],
+            "pheromone": 0.0
+        }
+    ],
+    "points": {
+        "anthills": [
+            {
+                "coordinates": [
+                    2,
+                    80
+                ],
+                "is_anthill": true
+            }
+        ],
+        "food": [
+            {
+                "coordinates": [
+                    69,
+                    24
+                ],
+                "food": 1500,
+                "is_anthill": false
+            }
+        ],
+        "ordinary": [
+            {
+                "coordinates": [
+                    93,
+                    70
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    44,
+                    15
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    93,
+                    8
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    9,
+                    53
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    56,
+                    80
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    56,
+                    3
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    18,
+                    9
+                ],
+                "is_anthill": false
+            },
+            {
+                "coordinates": [
+                    58,
+                    74
+                ],
+                "is_anthill": false
+            }
+        ]
+    }
+}
