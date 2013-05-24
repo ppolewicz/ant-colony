@@ -42,15 +42,15 @@ options.root_artifact_directory = 'results'
 
 ##########################################################################################################################################################
 
-options.generate_worlds = 1    # world generator enabled: create 1 world
+#options.generate_worlds = 1    # world generator enabled: create 1 world
 #options.generate_worlds = 20  # world generator enabled: create 20 worlds
-#options.generate_worlds = 0   # world generator disabled
+options.generate_worlds = 0   # world generator disabled
 
 # generated world type
 #options.world_type = 'Chessboard'
-options.world_type = 'CrossedChessboard'
+#options.world_type = 'CrossedChessboard'
 #options.world_type = 'SlightlyRandomized'
-#options.world_type = 'Simple'
+options.world_type = 'Simple'
 
 # number of dimensions
 #options.number_of_dimensions = 1
@@ -58,7 +58,9 @@ options.number_of_dimensions = 2
 #options.number_of_dimensions = 3
 
 # initial food
-options.force_initial_food = 1500
+#options.force_initial_food = 1500
+options.force_initial_food = 5000
+#options.force_initial_food = 10
 #options.force_initial_food = 10000
 #options.force_initial_food = None # World's default
 
@@ -81,12 +83,12 @@ options.queens += ['Ant2.HalfLengthPenaltyExponent']
 options.amounts_of_ants = [1, 8, 20]
 
 # amount of tests performed on a (queen, world) pair
-options.how_many_tests_per_queenworld = 3
+options.how_many_tests_per_queenworld = 2
 
 # director
-#options.director = 'Basic'
+options.director = 'Basic'
 #options.director = 'AnimatingVisualizer'
-options.director = 'ScreenRouteDrawingVisualizer'
+#options.director = 'ScreenRouteDrawingVisualizer'
 #options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
 #options.director = 'FileDrawingVisualizer' # doesn't show on screen, but saves png world screenshots
 
@@ -219,6 +221,10 @@ for queen_name in options.queens:
                 if os.path.exists(artifact_directory):
                     continue
                     pass
+
+                #import pycallgraph
+                #pycallgraph.start_trace()
+
                 prepare_directory(artifact_directory)
                 simulator = Simulator(reality, simulation_class, vaporizator)
                 stats_saver = statssaver_class(artifact_directory)
@@ -253,6 +259,7 @@ for queen_name in options.queens:
                 nice_json_dump(data, os.path.join(artifact_directory, 'results.json'))
                 print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
                 simulator.reset()
+                #pycallgraph.make_dot_graph('profile.png')
                 exit()
 
 

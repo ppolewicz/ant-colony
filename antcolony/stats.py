@@ -64,15 +64,15 @@ class QueenStats(object):
                 'fl_avg_moves': fl_avg_moves,
             }
         )
-        print 'found: %d, best: %.3f, avg.ph.: %.3f, max.ph.: %.3f [%.3f], fl.avg.moves: %d, fl.avg.cost: %.3f, last_cost: %s, world.time: %d' % (
-            self.food_discovered,
-            self.best_finding_cost,
-            avg_pheromone,
-            max_pheromone,
-            pheromone_ratio,
-            fl_avg_moves,
-            fl_avg_cost,
-            self.last_cost,
-            self.reality.world.elapsed_time,
-        )
+        #print 'found: %d, best: %.3f, avg.ph.: %.3f, max.ph.: %.3f [%.3f], fl.avg.moves: %d, fl.avg.cost: %.3f, last_cost: %s, world.time: %d' % (
+        #    self.food_discovered,
+        #    self.best_finding_cost,
+        #    avg_pheromone,
+        #    max_pheromone,
+        #    pheromone_ratio,
+        #    fl_avg_moves,
+        #    fl_avg_cost,
+        #    self.last_cost,
+        #    self.reality.world.elapsed_time,
+        #)
 
