@@ -2,14 +2,27 @@
 import os
 from collections import defaultdict
 from pprint import pprint
-import json
+import json, csv
+import itertools
+
+from util import avg
 
 DATA_PATH = 'results'
 result_filename = 'results.json'
+stats_filename = 'stats.csv'
 queens_in_worlds = defaultdict(lambda: set())
 di_world_qualification = defaultdict(lambda: set())
 
-data = []
+queens = set()
+worlds = set()
+
+data = defaultdict(
+    lambda: defaultdict(
+        lambda: defaultdict(
+            lambda: {}
+        )
+    )
+)
 
 for root, subfolders, files in os.walk(DATA_PATH):
     if root==DATA_PATH:
@@ -18,23 +31,62 @@ for root, subfolders, files in os.walk(DATA_PATH):
         continue
     dirname = os.path.split(root)[-1]
     world_name, queen_name, amount_of_ants, incarnation_number = dirname.split('_')
-    queens_in_worlds[world_name].add(queen_name)
-    di_world_qualification[queen_name].add(world_name)
-    results = json.load(open(os.path.join(root, result_filename)))
-    data.append([results['total_real_time'], dirname])
+    if queen_name=="BasicQueen-HalfLengthPenaltyExponent":
+        continue
+    #worlds.add(world_name)
+    #results = json.load(open(os.path.join(root, result_filename)))
+    #queen_name = '_'.join([queen_name, amount_of_ants])
+    #queens.add(queen_name)
+    #di = data[world_name, queen_name][incarnation_number]
+    #di['cost'] = results['cost'] * int(amount_of_ants)
+    #di['best_cost'] = results['best_finding_cost']
+    #di['total_real_time'] = results['total_real_time']
+    stats_path = os.path.join(root, stats_filename)
 
+    # load data
+    stats_data = []
+    for row in itertools.islice(csv.reader(open(stats_path, 'rb')), 1, None):
+        #print row[0], row[3]
+        stats_data.append(row[3])
 
-#pprint({k: v for k, v in queens_in_worlds.iteritems()})
+    # precompute
+    group_size = 500
+    aggregates = []
+    while stats_data:
+        aggregates.append(
+            avg(
+                [float(stats_data.pop()) for i in xrange(group_size)]
+            )
+        )
+    aggregates.reverse()
 
-#class AllResults(object):
-#    pass
+    if aggregates[3] / 2 < aggregates[-1]:
+        continue
+    print root
+    pprint(aggregates)
+    #break
+    raw_input()
 
-#pprint({k: v for k, v in di_world_qualification.iteritems()})
+raise Exception()
 
-for di in (di_world_qualification, queens_in_worlds):
-    for k in sorted(di, reverse=True):
-        v = di[k]
-        #print '%s: %s' % (k, len(v))
-        print '%s: %s' % (k, v)
-    print '-'*50
+columns = sorted(queens)
+writer = csv.writer(open('matrix.csv', 'wb'))
+writer.writerow(['world'] + columns)
+
+for world in worlds:
+    #print 'world', world
+    row = [world]
+    for queen in columns:
+        #print 'queen', queen
+        incarnations = data.get((world, queen), {})
+        results = [incarnation['cost'] for incarnation in incarnations.values()]
+        if results:
+            cell = min(results)
+        else:
+            cell = ''
+        row.append(cell)
+        #print 'cell', cell
+    writer.writerow(row)
+    #print row
+
 
