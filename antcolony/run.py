@@ -42,15 +42,15 @@ options.root_artifact_directory = 'results'
 
 ##########################################################################################################################################################
 
-#options.generate_worlds = 1    # world generator enabled: create 1 world
+options.generate_worlds = 1    # world generator enabled: create 1 world
 #options.generate_worlds = 20  # world generator enabled: create 20 worlds
-options.generate_worlds = 0   # world generator disabled
+#options.generate_worlds = 0   # world generator disabled
 
 # generated world type
 #options.world_type = 'Chessboard'
-#options.world_type = 'CrossedChessboard'
+options.world_type = 'CrossedChessboard'
 #options.world_type = 'SlightlyRandomized'
-options.world_type = 'Simple'
+#options.world_type = 'Simple'
 
 # number of dimensions
 #options.number_of_dimensions = 1
@@ -86,9 +86,9 @@ options.amounts_of_ants = [1, 8, 20]
 options.how_many_tests_per_queenworld = 2
 
 # director
-options.director = 'Basic'
+#options.director = 'Basic'
 #options.director = 'AnimatingVisualizer'
-#options.director = 'ScreenRouteDrawingVisualizer'
+options.director = 'ScreenRouteDrawingVisualizer'
 #options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
 #options.director = 'FileDrawingVisualizer' # doesn't show on screen, but saves png world screenshots
 
@@ -100,7 +100,7 @@ options.simulation_granularity = 'MultiSpawn'
 
 # this only makes sense on MultiSpawn
 #options.force_spawn_amount = None
-options.force_spawn_amount = 20000
+options.force_spawn_amount = 25
 
 # what should be the mode of pheromone vaporization
 #options.vaporizator_mode = 'Multiplier' # fair
@@ -118,7 +118,7 @@ options.statssaver_extension = 'csv'
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
     for i in xrange(options.generate_worlds):
-        chessboard_size = 20
+        chessboard_size = 30
         number_of_points = 10
         if options.world_type=='Chessboard':
             reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
@@ -211,16 +211,8 @@ for queen_name in options.queens:
                     },
                 )
 
-                #job = {}
-                #job['options'] = options
-                #job['queen'] = queen
-                #job['run_id'] = run_id
-                #job['amount_of_ants'] = amount_of_ants
-
-                #assert not os.path.exists(artifact_directory), 'result directory would be overwritten: %s' % (artifact_directory,)
                 if os.path.exists(artifact_directory):
                     continue
-                    pass
 
                 #import pycallgraph
                 #pycallgraph.start_trace()
@@ -260,6 +252,6 @@ for queen_name in options.queens:
                 print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
                 simulator.reset()
                 #pycallgraph.make_dot_graph('profile.png')
-                exit()
+                #exit()
 
 
