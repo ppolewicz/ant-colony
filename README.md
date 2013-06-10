@@ -1,7 +1,6 @@
 # ant-colony
 
-Ant colony simulator for the purpose of artificial inteligence course.
-World generators, simulators, vizualizers, model classes and an example ant have been released here, but the ant classes used to perform experiments have not been released.
+Ant colony simulator made for the purpose of artificial inteligence course.
 
 ## installing dependencies
 
@@ -26,8 +25,8 @@ this is distributed as .egg file rather than a handy .exe. To install an .egg fi
 
 ## running
 * clone the repository
-* copy example-worlds/ to worlds/
-* modify options in run.py (hint: use your own ant)
+* copy example-worlds/ to worlds/ (or set up options in run.py to generate new worlds)
+* modify other options in run.py
 * execute run.py
 
 ## license
