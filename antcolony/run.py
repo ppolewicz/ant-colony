@@ -92,20 +92,20 @@ options.director = 'ScreenRouteDrawingVisualizer'
 #options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
 #options.director = 'FileDrawingVisualizer' # doesn't show on screen, but saves png world screenshots
 
-# how often a frame should be drawn, if director drawing anything
+# how often a frame should be drawn, if director is drawing
 #options.simulation_granularity = 'Tick'
 #options.simulation_granularity = 'Spawn'
 options.simulation_granularity = 'MultiSpawn'
 #options.simulation_granularity = 'LastSpawn'
 
-# this only makes sense on MultiSpawn
+# how many spawns between frames are drawn. This only makes sense when simulation_granularity == 'MultiSpawn'.
 #options.force_spawn_amount = None
 options.force_spawn_amount = 25
 
 # what should be the mode of pheromone vaporization
-#options.vaporizator_mode = 'Multiplier' # fair
-#options.vaporizator_mode = 'Exponent' # probably broken
-options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration faster than the ones with low concentration
+#options.vaporizator_mode = 'Multiplier'
+#options.vaporizator_mode = 'Exponent'
+options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration much faster than the ones with low concentration
 
 # what format should the stats be saved in
 options.statssaver_extension = 'csv'
