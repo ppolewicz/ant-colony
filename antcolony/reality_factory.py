@@ -1,5 +1,5 @@
 from environment import EnvironmentParameters
-from world_generator_factory import SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory
+from world_generator_factory import SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory, HexagonWorldGeneratorFactory
 from reality import Reality
 from world import World
 
@@ -37,6 +37,11 @@ class CrossedChessboardRealityFactory(AbstractRealityFactory):
     @classmethod
     def get_generator(cls, number_of_dimensions, width):
         return CrossedChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+
+class HexagonRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, width):
+        return HexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
 
 if __name__=='__main__':
     from pprint import pprint
