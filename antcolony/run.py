@@ -5,6 +5,7 @@ import time
 
 import ant
 import ant2
+from periodic_processor import EdgeMutator
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, HexagonRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
@@ -159,6 +160,11 @@ elif options.vaporizator_mode=='Multiplier':
 else:
     raise BadConfigurationException('Bad vaporizator mode configuration')
 vaporizator = vaporizator_class(trigger_level=50)
+edge_mutations_count = 1 # TODO
+edge_mutator_class = EdgeMutator
+
+p = 1/float(edge_mutations_count+1)
+edge_mutator = edge_mutator_class(p, p)
 
 if options.director == 'Basic':
     director = BasicSimulationDirector()
@@ -221,7 +227,7 @@ for queen_name in options.queens:
                 #pycallgraph.start_trace()
 
                 prepare_directory(artifact_directory)
-                simulator = Simulator(reality, simulation_class, vaporizator)
+                simulator = Simulator(reality, simulation_class, [vaporizator, edge_mutator])
                 stats_saver = statssaver_class(artifact_directory)
                 simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
                 if force_spawn_amount:

@@ -1,9 +1,8 @@
 import math
-from periodic_processor import AbstractPeriodicRealityProcessor
+from periodic_processor import AbstractPeriodicEdgePheromoneModifier
 
-class AbstractPheromoneVaporization(AbstractPeriodicRealityProcessor):
-    def compute_new_cost(self, old_cost):
-        return old_cost
+class AbstractPheromoneVaporization(AbstractPeriodicEdgePheromoneModifier):
+    pass
 
 class MultiplierPheromoneVaporization(AbstractPheromoneVaporization):
     MULTIPLIER = 0.8
