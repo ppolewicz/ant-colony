@@ -69,26 +69,27 @@ options.force_initial_food = 5000
 # queen
 options.queens = []
 #options.queens += ['PurelyRandom']                # purely random ant (expect horrible performance)
-options.queens += ['Ant2.BasicAnt']               # Basic ant
-options.queens += ['Ant2.PathShorteningAnt']      # BasicAnt that eagerly eliminates cycles in it's return path
-options.queens += ['Ant2.ShortcutAnt']            # BasicAnt that tries to find a shortcut to anthill """
+#options.queens += ['Ant2.BasicAnt']               # Basic ant
+#options.queens += ['Ant2.PathShorteningAnt']      # BasicAnt that eagerly eliminates cycles in it's return path
+#options.queens += ['Ant2.ShortcutAnt']            # BasicAnt that tries to find a shortcut to anthill
 options.queens += ['Ant2.AdvancedAnt']            # ant that eagerly eliminates cycles in it's return path and tries to find a shortcut to anthill
-options.queens += ['Ant2.AdvancedQuadraticAnt']   # AdvancedAnt which squares pheromone before using roulette
-options.queens += ['Ant2.AdvancedRootAnt']        # AdvancedAnt which square roots pheromone before using roulette
-options.queens += ['Ant2.AdvancedBadLuckAnt']     # AdvancedAnt which picks a random candidate edge instead of using roulette
-options.queens += ['Ant2.AdvancedIgnorantAnt']    # AdvancedAnt which doesn't ignore a point which was rejected previously
-options.queens += ['Ant2.LinearPenaltyAnt']       # AdvancedAnt which applies only proportional length coefficient pheromone drop (instead of exponent)
-options.queens += ['Ant2.HalfLengthPenaltyExponent']
+#options.queens += ['Ant2.AdvancedQuadraticAnt']   # AdvancedAnt which squares pheromone before using roulette
+#options.queens += ['Ant2.AdvancedRootAnt']        # AdvancedAnt which square roots pheromone before using roulette
+#options.queens += ['Ant2.AdvancedBadLuckAnt']     # AdvancedAnt which picks a random candidate edge instead of using roulette
+#options.queens += ['Ant2.AdvancedIgnorantAnt']    # AdvancedAnt which doesn't ignore a point which was rejected previously
+#options.queens += ['Ant2.LinearPenaltyAnt']       # AdvancedAnt which applies only proportional length coefficient pheromone drop (instead of exponent)
+#options.queens += ['Ant2.HalfLengthPenaltyExponent']
 
 # amounts of ants
-#options.amounts_of_ants = [1]
-options.amounts_of_ants = [1, 8, 20]
+options.amounts_of_ants = [1]
+#options.amounts_of_ants = [1, 8, 20]
 
 # amount of tests performed on a (queen, world) pair
 options.how_many_tests_per_queenworld = 2
+options.how_many_tests_per_queenworld = 1
 
 # director
-#options.director = 'Basic'
+options.director = 'Basic'
 #options.director = 'AnimatingVisualizer'
 options.director = 'ScreenRouteDrawingVisualizer'
 #options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
@@ -101,7 +102,7 @@ options.simulation_granularity = 'MultiSpawn'
 #options.simulation_granularity = 'LastSpawn'
 
 # how many spawns between frames are drawn. This only makes sense when simulation_granularity == 'MultiSpawn'.
-#options.force_spawn_amount = None
+options.force_spawn_amount = None
 options.force_spawn_amount = 25
 
 # what should be the mode of pheromone vaporization
