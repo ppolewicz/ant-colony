@@ -17,11 +17,11 @@ class AbstractEdgeGenerator(object):
                 if source_point == target_point:
                     continue
                 yield Edge(source_point, target_point, self._get_edge_cost(source_point, target_point))
+    def _distance_between_points(self, source_point, target_point):
+        return source_point.get_distance_to(target_point)
 
 class SimpleEdgeGenerator(AbstractEdgeGenerator):
-    def _get_edge_cost(self, source_point, target_point):
-        distance = source_point.get_distance_to(target_point)
-        return distance
+    _get_edge_cost = AbstractEdgeGenerator._distance_between_points
 
 class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
     def __init__(self, min_random_coefficient, max_random_coefficient):
@@ -35,7 +35,7 @@ class RandomCoefficientEdgeGenerator(SimpleEdgeGenerator):
         assert result >= 0, 'Negative edge cost! base: %s, random_coefficient: %s' % (base, random_coefficient)
         return result
 
-class LimitMixin(object):
+class QuantityLimitMixin(object):
     def _generate_all(self, points, *args, **kwargs):
         min_hint_edges_from_point = 1
         max_hint_edges_from_point = 2
@@ -54,10 +54,28 @@ class LimitMixin(object):
                 existing_edges.add(edge)
                 yield edge
 
-class LimitedRandomCoefficientEdgeGenerator(LimitMixin, RandomCoefficientEdgeGenerator):
+class RangeLimitMixin(object):
+    def _generate_all(self, points, *args, **kwargs):
+        max_edge_distance = 15
+        existing_edges = set()
+        for source_point in points:
+            for target_point in points:
+                if source_point == target_point:
+                    continue
+                if self._distance_between_points(source_point, target_point) > max_edge_distance:
+                    continue
+                edge = Edge(source_point, target_point, self._get_edge_cost(source_point, target_point))
+                if edge in existing_edges:
+                    continue
+                yield edge
+
+class LimitedRangeRandomCoefficientEdgeGenerator(RangeLimitMixin, RandomCoefficientEdgeGenerator):
     pass
 
-class LimitedEdgeGenerator(LimitMixin, SimpleEdgeGenerator):
+class LimitedQuantityRandomCoefficientEdgeGenerator(QuantityLimitMixin, RandomCoefficientEdgeGenerator):
+    pass
+
+class LimitedQuantityEdgeGenerator(QuantityLimitMixin, SimpleEdgeGenerator):
     pass
 
 class ChessboardEdgeGenerator(SimpleEdgeGenerator):
