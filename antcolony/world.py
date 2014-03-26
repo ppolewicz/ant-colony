@@ -17,7 +17,7 @@ class World(object):
     def _save_initial_food(self):
         self.initial_food = [(point, point.food) for point in self.get_food_points()]
     def is_resolved(self):
-        return sum([point.food for point in self.get_food_points()]) <= 0
+        return sum(point.food for point in self.get_food_points()) <= 0
     def get_anthills(self):
         return [point for point in self.points if point.is_anthill()]
     def get_anthill(self):
@@ -72,8 +72,8 @@ class World(object):
             edges.add(e)
         return cls(points, edges)
     def get_average_pheromone_level(self):
-        return avg([edge.pheromone_level() for edge in self.edges])
+        return avg(edge.pheromone_level() for edge in self.edges)
     def get_max_pheromone_level(self):
-        return max([edge.pheromone_level() for edge in self.edges]) # simplification
+        return max(edge.pheromone_level() for edge in self.edges) # simplification
     def get_total_food(self):
-        return sum([point.food for point in self.points])
+        return sum(point.food for point in self.points)
