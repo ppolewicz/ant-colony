@@ -230,7 +230,7 @@ for queen_name in options.queens:
                 simulator = Simulator(reality, simulation_class, [vaporizator, edge_mutator])
                 stats_saver = statssaver_class(artifact_directory)
                 simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
-                if force_spawn_amount:
+                if simulation_class == MultiSpawnStepSimulation and options.force_spawn_amount:
                     simulation.spawn_amount = force_spawn_amount
                 FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
 
