@@ -13,15 +13,23 @@ class AbstractPeriodicRealityProcessor(AbstractSimulationEvent):
         raise NotImplementedError('%s did not implement a mandatory method' % (self.__class__.__name__,))
 
 class AbstractPeriodicEdgeModifier(AbstractPeriodicRealityProcessor):
+    PERIOD = 10000
     def __init__(self, cost_trigger_level, cost_trigger_level_addition, **kwargs):
         super(AbstractPeriodicEdgeModifier, self).__init__(**kwargs)
         self.cost_trigger_level = cost_trigger_level
-        self.cost_trigger_level_addition = cost_trigger_level
+        self.cost_trigger_level_addition = cost_trigger_level_addition
     def process_end(self, reality, stats):
+        next_trigger_level = self.cost_trigger_level
+        #print 'processing %s' % (self.__class__.__name__,), self.cost_trigger_level, reality.world.completion_level()
         if reality.world.completion_level() >= self.cost_trigger_level:
+            print self.__class__.__name__, 'processing edges at', reality.world.completion_level()
+            next_trigger_level += self.cost_trigger_level_addition
             for edge in reality.world.edges:
                 edge.cost = self.compute_new_cost(edge.cost)
-        return self.__class__(self.cost_trigger_level + self.cost_trigger_level_addition, self.cost_trigger_level_addition, end_time=self.end_time+self.PERIOD), frozenset()
+        return self.__class__(
+                next_trigger_level,
+                self.cost_trigger_level_addition,
+                end_time=self.end_time+self.PERIOD), frozenset()
     def compute_new_cost(self, old_cost):
         raise NotImplementedError()
 
