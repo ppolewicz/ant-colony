@@ -20,10 +20,10 @@ class AbstractSimulation(object):
 
 class TickStepSimulation(AbstractSimulation):
     def advance(self):
-        print 'ticks', self.ticks
         if self.reality.is_resolved():
             return [], True, None
         tick_changed_items, stats = self.tick()
+        print 'ticks: %d, food_discovered: %d' % (self.ticks, stats.food_discovered)
         return tick_changed_items, False, stats.last_route
 
 class MultiSpawnStepSimulation(AbstractSimulation):
