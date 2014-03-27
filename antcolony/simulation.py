@@ -31,16 +31,18 @@ class MultiSpawnStepSimulation(AbstractSimulation):
         super(MultiSpawnStepSimulation, self).__init__(reality, *args, **kwargs)
         self.spawn_amount = 50
         self.anthills = reality.world.get_anthills()
+    def _anthill_food_sum(self):
+        return sum(anthill.food for anthill in self.anthills)
     def advance(self):
         if self.reality.is_resolved():
             return [], True, None
-        anthill_food_pre_tick = sum([anthill.food for anthill in self.anthills])
+        anthill_food_pre_tick = self._anthill_food_sum()
         changed_items = set()
         amount = 0
         while amount <= self.spawn_amount:
             tick_changed_items, stats = self.tick()
             changed_items.update(tick_changed_items)
-            anthill_food_post_tick = sum([anthill.food for anthill in self.anthills])
+            anthill_food_post_tick = self._anthill_food_sum()
             if anthill_food_post_tick != anthill_food_pre_tick+amount:
                 if self.reality.is_resolved():
                     break
