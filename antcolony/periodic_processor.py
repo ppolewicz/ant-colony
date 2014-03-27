@@ -44,7 +44,7 @@ class AbstractPeriodicEdgePheromoneModifier(AbstractPeriodicEdgeModifier):
                     if edge_end.pheromone_level!=new:
                         changed_pheromone_edges.append(edge_end.edge)
                         edge_end.pheromone_level = new
-        return self.__class__(self.trigger_level, self.end_time+self.PERIOD), frozenset(changed_pheromone_edges)
+        return self.__class__(self.pheromone_trigger_level, end_time=self.end_time+self.PERIOD), frozenset(changed_pheromone_edges)
     def compute_new_pheromone(self, old_pheromone_level):
         raise NotImplementedError()
 
