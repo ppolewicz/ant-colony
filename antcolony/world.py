@@ -14,9 +14,9 @@ class World(object):
         self.edges = edges
         self.elapsed_time = 0.0
         self._save_initial_food()
-        self._initial_food_sum = sum(food for point, food in self.initial_food)
     def _save_initial_food(self):
         self.initial_food = [(point, point.food) for point in self.get_food_points()]
+        self._initial_food_sum = sum(food for point, food in self.initial_food)
     def completion_level(self):
         return float(self.get_total_food()) / self._initial_food_sum
     def is_resolved(self):
