@@ -18,9 +18,11 @@ class World(object):
         self.initial_food = [(point, point.food) for point in self.get_food_points()]
         self._initial_food_sum = sum(food for point, food in self.initial_food)
     def completion_level(self):
-        return float(self.get_total_food()) / self._initial_food_sum
+        k = (self._initial_food_sum - self.get_total_food()) / float(self._initial_food_sum)
+        assert 0 <= k <= 1
+        return k
     def is_resolved(self):
-        return sum(point.food for point in self.get_food_points()) <= 0
+        return self.get_total_food() <= 0
     def get_anthills(self):
         return [point for point in self.points if point.is_anthill()]
     def get_anthill(self):
@@ -79,4 +81,4 @@ class World(object):
     def get_max_pheromone_level(self):
         return max(edge.pheromone_level() for edge in self.edges) # simplification
     def get_total_food(self):
-        return sum(point.food for point in self.points)
+        return sum(point.food for point in self.get_food_points())

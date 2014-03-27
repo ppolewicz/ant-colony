@@ -16,7 +16,10 @@ class Simulator(object):
             reality_processor.set_ant_count(len(ants))
         antmoves.extend(self.reality_processors)
         stats = QueenStats(self.reality, len(ants), stats_saver)
-        return self.simulation_class(self.reality, antmoves, stats)
+        simulation = self.simulation_class(self.reality, antmoves, stats)
+        for reality_processor in self.reality_processors:
+            reality_processor.register_simulation(simulation)
+        return simulation
     def get_results(self, simulation):
         ticks = simulation.ticks
         stats = simulation.stats

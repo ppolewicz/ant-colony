@@ -53,8 +53,6 @@ class AbstractAntMove(AbstractSimulationEvent):
             pheromone_to_drop=pheromone_to_drop,
             trip_stats=self.trip_stats,
         ), frozenset(changed)
-    def __cmp__(self, other):
-        return self.end_time - other.end_time
     def __repr__(self):
         return '%s@%s' % (self.__class__.__name__, self.end_time,)
 
