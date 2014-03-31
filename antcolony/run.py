@@ -5,7 +5,7 @@ import time
 
 import ant
 import ant2
-from periodic_processor import EdgeMutator
+from periodic_processor import CostInvertingEdgeMutator, CostMultiplierEdgeMutator
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, HexagonRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory, UpperLeftCornerDistanceCrossedChessboardRealityFactory
@@ -165,8 +165,12 @@ elif options.vaporizator_mode=='Multiplier':
 else:
     raise BadConfigurationException('Bad vaporizator mode configuration')
 vaporizator = vaporizator_class(trigger_level=50)
+
 edge_mutations_count = 1 # TODO
-edge_mutator_class = EdgeMutator
+if 0: # TODO
+    edge_mutator_class = CostMultiplierEdgeMutator
+else:
+    edge_mutator_class = CostInvertingEdgeMutator
 
 p = 1/float(edge_mutations_count+1)
 edge_mutator = edge_mutator_class(p, p)

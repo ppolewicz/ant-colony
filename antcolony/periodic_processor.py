@@ -24,18 +24,32 @@ class AbstractPeriodicEdgeModifier(AbstractPeriodicRealityProcessor):
         if reality.world.completion_level() >= self.cost_trigger_level:
             print self.__class__.__name__, 'processing edges at', reality.world.completion_level()
             next_trigger_level += self.cost_trigger_level_addition
-            for edge in reality.world.edges:
-                edge.cost = self.compute_new_cost(edge.cost)
+            self._process_all_edges(reality.world.edges)
         return self.__class__(
                 next_trigger_level,
                 self.cost_trigger_level_addition,
                 end_time=self.end_time+self.PERIOD), frozenset()
+    def _process_all_edges(self, edges):
+        for edge in edges:
+            edge.cost = self.compute_new_cost(edge.cost)
     def compute_new_cost(self, old_cost):
         raise NotImplementedError()
 
-class EdgeMutator(AbstractPeriodicEdgeModifier):
+class CostMultiplierEdgeMutator(AbstractPeriodicEdgeModifier):
     def compute_new_cost(self, old_cost):
         return old_cost * 2.0 / random.randint(1, 4)
+
+class CostInvertingEdgeMutator(AbstractPeriodicEdgeModifier):
+    def _process_all_edges(self, edges):
+        assert edges, '%s needs at least one edge to be present in the world to operate' % (self.__class__.__name__,)
+        cost_registry = set(edge.cost for edge in edges)
+        number_of_unique_costs = len(cost_registry)
+        sorted_costs = sorted(cost_registry)
+        cost_change_map = {}
+        for index, cost in enumerate(sorted_costs):
+            cost_change_map[cost] = sorted_costs[number_of_unique_costs - index-1]
+        for edge in edges:
+            edge.cost = cost_change_map[edge.cost]
 
 class AbstractPeriodicEdgePheromoneModifier(AbstractPeriodicEdgeModifier):
     def __init__(self, trigger_level, **kwargs):
