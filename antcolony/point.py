@@ -56,3 +56,6 @@ class FoodPoint(AbstractPoint):
     def from_json(cls, json_point):
         return cls(tuple(json_point[cls.JSON_KEY_COORDINATES]), json_point[cls.JSON_KEY_FOOD])
 
+def distance_between_points(source_point, target_point):
+    return source_point.get_distance_to(target_point)
+
