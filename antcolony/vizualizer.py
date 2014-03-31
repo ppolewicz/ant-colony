@@ -1,9 +1,12 @@
-import os.path
+from functools import partial
 import itertools
+import os.path
 from sys import float_info
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib import animation
+
 from edge import Edge
 from point import AbstractPoint
 
@@ -199,6 +202,13 @@ class FileRouteDrawingVisualizer(FileSavingDirectorMixin, RouteDrawingVisualizer
 
 class FileCostDrawingVisualizer(CostEdgePainterMixin, FileSavingDirectorMixin, ResettingVisualizer):
     pass
+
+
+def _drawing_helper(drawer_class, prefix, simulation, artifact_directory, reality, force_name=False):
+    drawer_class(simulation, artifact_directory).render_reality(reality, '%s_%s' % (prefix, force_name or simulation.ticks,))
+
+draw_link_costs = partial(_drawing_helper, FileCostDrawingVisualizer, 'link_costs')
+draw_pheromone_levels = partial(_drawing_helper, FileDrawingVisualizer, 'pheromone_levels')
 
 
 if __name__=='__main__':

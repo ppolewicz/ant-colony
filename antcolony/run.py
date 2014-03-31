@@ -15,7 +15,7 @@ from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimu
 from stats_saver import CSVStatsSaver, NullStatsSaver, TSVStatsSaver
 from util import nice_json_dump
 from vaporization import ExponentPheromoneVaporization, LogarithmPheromoneVaporization, MultiplierPheromoneVaporization
-from vizualizer import FileCostDrawingVisualizer, FileDrawingVisualizer
+from vizualizer import draw_link_costs, draw_pheromone_levels
 
 assert __name__ == '__main__', 'this module should not be included, but invoked'
 
@@ -237,7 +237,7 @@ for queen_name in options.queens:
                 simulation = simulator.simulate(queen, amount_of_ants, stats_saver)
                 if simulation_class == MultiSpawnStepSimulation and options.force_spawn_amount:
                     simulation.spawn_amount = force_spawn_amount
-                FileCostDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'link_costs')
+                draw_link_costs(simulation, artifact_directory, reality)
 
                 start_time = time.time()
                 director.direct(simulation, artifact_directory)
@@ -261,7 +261,8 @@ for queen_name in options.queens:
                     'total_real_time': total_real_time,
                 }
                 nice_json_dump(reality.world.to_json(), os.path.join(artifact_directory, os.path.basename(file_)))
-                FileDrawingVisualizer(simulation, artifact_directory).render_reality(reality, 'end')
+                draw_pheromone_levels(simulation, artifact_directory, reality, force_name='end')
+                draw_link_costs(simulation, artifact_directory, reality, force_name='end')
                 nice_json_dump(data, os.path.join(artifact_directory, 'results.json'))
                 print 'world: %s, queen: %s, ants: %s, avg.decisions: %s, avg.time/ant: %s' % (file_, queen.get_name(), amount_of_ants, ticks, elapsed_balanced)
                 simulator.reset()
