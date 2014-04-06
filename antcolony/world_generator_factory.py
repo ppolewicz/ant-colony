@@ -86,14 +86,21 @@ class CrossedChessboardWorldGeneratorFactory(ChessboardWorldGeneratorFactory):
 class UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory(CrossedChessboardWorldGeneratorFactory):
     @classmethod
     def _get_edge_cost_generator(cls):
-        return DistanceFromCornersEdgeCostGenerator([Corner.UPPER_LEFT])
+        return DistanceFromCornersEdgeCostGenerator([Corner.UPPER_LEFT], exponent=2)
 
-class HexagonWorldGeneratorFactory(AbstractCustomWidthWorldGeneratorFactory):
+class AbstractHexagonWorldGeneratorFactory(AbstractCustomWidthWorldGeneratorFactory):
     EDGE_GENERATOR_CLASS = LimitedRangeEdgeGenerator
     POINT_GENERATOR_CLASS = HexagonPointGenerator
     @classmethod
     def _get_number_of_points(cls, number_of_dimensions, width):
         return 9
+
+class HexagonWorldGeneratorFactory(AbstractHexagonWorldGeneratorFactory):
     @classmethod
     def _get_edge_cost_generator(cls):
         return RandomCoefficientEdgeCostGenerator(0.5, 2.0)
+
+class UpperLeftCornerDistanceHexagonWorldGeneratorFactory(AbstractHexagonWorldGeneratorFactory):
+    @classmethod
+    def _get_edge_cost_generator(cls):
+        return DistanceFromCornersEdgeCostGenerator([Corner.UPPER_LEFT], exponent=2)

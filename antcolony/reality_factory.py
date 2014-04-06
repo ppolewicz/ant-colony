@@ -1,5 +1,5 @@
 from environment import EnvironmentParameters
-from world_generator_factory import ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory, HexagonWorldGeneratorFactory, SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory
+from world_generator_factory import ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory, HexagonWorldGeneratorFactory, SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory, UpperLeftCornerDistanceHexagonWorldGeneratorFactory
 from reality import Reality
 from world import World
 
@@ -47,6 +47,12 @@ class UpperLeftCornerDistanceCrossedChessboardRealityFactory(AbstractRealityFact
     @classmethod
     def get_generator(cls, number_of_dimensions, width):
         return UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+
+class UpperLeftCornerDistanceHexagonRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, width):
+        return UpperLeftCornerDistanceHexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+
 
 
 if __name__=='__main__':

@@ -8,6 +8,11 @@ def avg(iterable):
         element_count += 1
     return sum_ / element_count
 
+def get_average_coordinates(li_coordinates):
+    """ Get coordinates of a point between two points. """
+    assert len(li_coordinates) == 2 and len(li_coordinates[0]) == 2, 'This would probably work for any number of dimensions or coordinates, but was not tested'
+    return [avg(i) for i in zip(*li_coordinates)]
+
 def nice_json_dump(data, filepath):
     with open(filepath, 'w') as f:
         json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
