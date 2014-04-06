@@ -20,7 +20,7 @@ class CertainPointNumberWorldGeneratorFactory(AbstractWorldGeneratorFactory):
     EDGE_GENERATOR_CLASS = None
     @classmethod
     def create_world_generator(cls, number_of_dimensions, number_of_points):
-        point_generator = cls._get_point_generator()
+        point_generator = cls._get_point_generator(number_of_dimensions, number_of_points)
         edge_generator = cls.EDGE_GENERATOR_CLASS()
         edge_cost_generator = cls._get_edge_cost_generator()
         return SimpleWorldGenerator(number_of_dimensions, point_generator, edge_generator, edge_cost_generator, number_of_points)
