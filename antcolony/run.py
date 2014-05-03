@@ -8,7 +8,9 @@ import ant2
 from periodic_processor import CostInvertingEdgeMutator, CostMultiplierEdgeMutator
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
-from reality_factory import ChessboardRealityFactory, CrossedChessboardRealityFactory, HexagonRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory, UpperLeftCornerDistanceCrossedChessboardRealityFactory, UpperLeftCornerDistanceHexagonRealityFactory
+from reality_factory import ChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
+from reality_factory import CrossedChessboardRealityFactory, UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory, UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory
+from reality_factory import HexagonRealityFactory, UpperLeftCornerThresholdDistanceHexagonRealityFactory, UpperLeftCornerTrueDistanceHexagonRealityFactory
 from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
@@ -49,12 +51,14 @@ options.generate_worlds = 1    # world generator enabled: create 1 world
 
 # generated world type
 #options.world_type = 'Chessboard'
-options.world_type = 'CrossedChessboard'
+#options.world_type = 'CrossedChessboard'
 #options.world_type = 'SlightlyRandomized'
 #options.world_type = 'Simple'
 #options.world_type = 'Hexagon'
-options.world_type = 'UpperLeftCornerDistanceCrossedChessboard'
-#options.world_type = 'UpperLeftCornerDistanceHexagon'
+options.world_type = 'UpperLeftCornerThresholdDistanceCrossedChessboard'
+#options.world_type = 'UpperLeftCornerThresholdDistanceHexagon'
+#options.world_type = 'UpperLeftCornerTrueDistanceCrossedChessboard'
+#options.world_type = 'UpperLeftCornerTrueDistanceHexagon'
 
 # number of dimensions
 #options.number_of_dimensions = 1
@@ -63,9 +67,9 @@ options.number_of_dimensions = 2
 
 # initial food
 #options.force_initial_food = 1500
-options.force_initial_food = 5000
+#options.force_initial_food = 5000
 #options.force_initial_food = 10
-#options.force_initial_food = 10000
+options.force_initial_food = 10000
 #options.force_initial_food = None # World's default
 
 # queen
@@ -84,6 +88,7 @@ options.queens += ['Ant2.AdvancedAnt']            # ant that eagerly eliminates 
 
 # amounts of ants
 options.amounts_of_ants = [1]
+options.amounts_of_ants = [20]
 #options.amounts_of_ants = [1, 8, 20]
 
 # amount of tests performed on a (queen, world) pair
@@ -94,7 +99,7 @@ options.how_many_tests_per_queenworld = 1
 options.director = 'Basic'
 #options.director = 'AnimatingVisualizer'
 options.director = 'ScreenRouteDrawingVisualizer'
-#options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
+options.director = 'FileRouteDrawingVisualizer' # doesn't show on screen, but saves png route screenshots
 #options.director = 'FileDrawingVisualizer' # doesn't show on screen, but saves png world screenshots
 
 # how often a frame should be drawn, if director is drawing
@@ -105,12 +110,12 @@ options.simulation_granularity = 'MultiSpawn'
 
 # how many spawns between frames are drawn. This only makes sense when simulation_granularity == 'MultiSpawn'.
 options.force_spawn_amount = None
-options.force_spawn_amount = 25
+options.force_spawn_amount = 250
 
 # what should be the mode of pheromone vaporization
-#options.vaporizator_mode = 'Multiplier'
+options.vaporizator_mode = 'Multiplier'
 #options.vaporizator_mode = 'Exponent'
-options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration much faster than the ones with low concentration
+#options.vaporizator_mode = 'Logarithm' # vaporize edges with high pheromone concentration much faster than the ones with low concentration
 
 # what format should the stats be saved in
 options.statssaver_extension = 'csv'
@@ -123,20 +128,23 @@ options.statssaver_extension = 'csv'
 if options.generate_worlds>0:
     prepare_directory(options.world_dir)
     for i in xrange(options.generate_worlds):
-        chessboard_size = 10
+        chessboard_size = 20
         number_of_points = 10
         hexagon_board_size = 30
         if options.world_type=='Chessboard':
             reality = ChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='CrossedChessboard':
             reality = CrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
-        elif options.world_type=='UpperLeftCornerDistanceCrossedChessboard':
-            reality = UpperLeftCornerDistanceCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
+        elif options.world_type=='UpperLeftCornerThresholdDistanceCrossedChessboard':
+            reality = UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
+        elif options.world_type=='UpperLeftCornerTrueDistanceCrossedChessboard':
+            reality = UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='Hexagon':
             reality = HexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
-        elif options.world_type=='UpperLeftCornerDistanceHexagon':
-            reality = UpperLeftCornerDistanceHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
-
+        elif options.world_type=='UpperLeftCornerTrueDistanceHexagon':
+            reality = UpperLeftCornerTrueDistanceHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
+        elif options.world_type=='UpperLeftCornerThresholdDistanceHexagon':
+            reality = UpperLeftCornerThresholdDistanceHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
         elif options.world_type=='Simple':
             reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         elif options.world_type=='SlightlyRandomized':
@@ -168,7 +176,7 @@ elif options.vaporizator_mode=='Multiplier':
     vaporizator_class = MultiplierPheromoneVaporization
 else:
     raise BadConfigurationException('Bad vaporizator mode configuration')
-vaporizator = vaporizator_class(trigger_level=50)
+vaporizator = vaporizator_class(trigger_level=5)
 
 edge_mutations_count = 1 # TODO
 if 0: # TODO

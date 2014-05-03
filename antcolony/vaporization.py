@@ -5,7 +5,7 @@ class AbstractPheromoneVaporization(AbstractPeriodicEdgePheromoneModifier):
     pass
 
 class MultiplierPheromoneVaporization(AbstractPheromoneVaporization):
-    MULTIPLIER = 0.8
+    MULTIPLIER = 0.5
     def compute_new_pheromone(self, old_pheromone_level):
         return max(0.0, old_pheromone_level*self.MULTIPLIER)
 

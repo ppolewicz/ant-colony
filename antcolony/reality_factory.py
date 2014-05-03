@@ -1,5 +1,5 @@
 from environment import EnvironmentParameters
-from world_generator_factory import ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory, HexagonWorldGeneratorFactory, SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory, UpperLeftCornerDistanceHexagonWorldGeneratorFactory
+from world_generator_factory import ChessboardWorldGeneratorFactory, CrossedChessboardWorldGeneratorFactory, HexagonWorldGeneratorFactory, SimpleWorldGeneratorFactory, SlightlyRandomizedWorldGeneratorFactory, UpperLeftCornerThresholdDistanceCrossedChessboardWorldGeneratorFactory, UpperLeftCornerThresholdDistanceHexagonWorldGeneratorFactory, UpperLeftCornerTrueDistanceCrossedChessboardWorldGeneratorFactory, UpperLeftCornerTrueDistanceHexagonWorldGeneratorFactory
 from reality import Reality
 from world import World
 
@@ -43,15 +43,25 @@ class HexagonRealityFactory(AbstractRealityFactory):
     def get_generator(cls, number_of_dimensions, width):
         return HexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
 
-class UpperLeftCornerDistanceCrossedChessboardRealityFactory(AbstractRealityFactory):
+class UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory(AbstractRealityFactory):
     @classmethod
     def get_generator(cls, number_of_dimensions, width):
-        return UpperLeftCornerDistanceCrossedChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+        return UpperLeftCornerThresholdDistanceCrossedChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
 
-class UpperLeftCornerDistanceHexagonRealityFactory(AbstractRealityFactory):
+class UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory(AbstractRealityFactory):
     @classmethod
     def get_generator(cls, number_of_dimensions, width):
-        return UpperLeftCornerDistanceHexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+        return UpperLeftCornerTrueDistanceCrossedChessboardWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+
+class UpperLeftCornerThresholdDistanceHexagonRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, width):
+        return UpperLeftCornerThresholdDistanceHexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
+
+class UpperLeftCornerTrueDistanceHexagonRealityFactory(AbstractRealityFactory):
+    @classmethod
+    def get_generator(cls, number_of_dimensions, width):
+        return UpperLeftCornerTrueDistanceHexagonWorldGeneratorFactory.create_world_generator(number_of_dimensions, width)
 
 
 
