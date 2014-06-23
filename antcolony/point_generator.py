@@ -126,22 +126,33 @@ class HexagonPointGenerator(AbstractLimitedNumberPointGenerator):
 
         L = self._get_width() / 2.0 -2
         result = []
-        result.append( (L, 0) )
-        result.append( (L / 2.0, L * sqrt(3) / 2.0) )
-        result.append( (-L / 2.0, L * sqrt(3) / 2.0) )
-        result.append( (-L, 0) )
-        result.append( (-L / 2.0, -L * sqrt(3) / 2.0) )
-        result.append( (L / 2.0, -L * sqrt(3) / 2.0) )
+#
+#           2       1       F
+#
+#
+#
+#
+#       3       7       0
+#
+#
+#
+#
+#   A       4       5
+#
+        result.append( (L, 0) )                          # 0
+        result.append( (L / 2.0, L * sqrt(3) / 2.0) )    # 1
+        result.append( (-L / 2.0, L * sqrt(3) / 2.0) )   # 2
+        result.append( (-L, 0) )                         # 3
+        result.append( (-L / 2.0, -L * sqrt(3) / 2.0) )  # 4
+        result.append( (L / 2.0, -L * sqrt(3) / 2.0) )   # 5
 
-        result.append( (0, 0) )
+        result.append( (0, 0) )                          # 7
 
         yield AnthillPoint(
-            #(0, 0)
-            (-2.5, 2.5)
+            (-L * 1.5 +L+1, -L * sqrt(3) / 2.0 + L + 1)  # A
         )
         yield FoodPoint(
-            #(self.max_boundary, self.max_boundary),
-            (self.max_boundary+2.5, self.max_boundary-2.5),
+            (L * 1.5 +L+1, L * sqrt(3) / 2.0 + L + 1),   # F
             self.get_food_amount()
         )
 
