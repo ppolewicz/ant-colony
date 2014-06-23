@@ -1,8 +1,8 @@
-from math import hypot
+from math import hypot, sqrt
 from point import distance_between_points
 import random
 
-from util import corner_coordinates, get_average_coordinates, Corner
+from util import corner_coordinates, get_average_coordinates
 
 class AbstractEdgeCostGenerator(object):
     def __init__(self, exponent=1):
@@ -57,18 +57,29 @@ class TrueDistanceFromCornersEdgeCostGenerator(AbstractDistanceFromPointsEdgeCos
         #self.reference_points = [(10, -10)]
         return super(TrueDistanceFromCornersEdgeCostGenerator, self).register_points(points)
 
-class ThresholdDistanceFromCornerEdgeCostGenerator(AbstractEdgeCostGenerator):
+class AbstractPairOfCornersOrientedEdgeCostGenerator(AbstractEdgeCostGenerator):
     PENALTY_MULTIPLIER = 5
-    THRESHOLD = 0.8
     def __init__(self, point_type_pairs, *args, **kwargs):
-        self.point_type_pairs = point_type_pairs
+        self.point_type_pairs = point_type_pairs  # ex. upper left, lower right
         self.point_pairs = []
-        super(ThresholdDistanceFromCornerEdgeCostGenerator, self).__init__(*args, **kwargs)
+        super(AbstractPairOfCornersOrientedEdgeCostGenerator, self).__init__(*args, **kwargs)
     def register_points(self, points):
         point_coordinates = [point.coordinates for point in points]
         cc = corner_coordinates(point_coordinates)
         self.point_pairs = [[cc[id_a], cc[id_b]] for id_a, id_b in self.point_type_pairs]
-        return super(ThresholdDistanceFromCornerEdgeCostGenerator, self).register_points(points)
+        return super(AbstractPairOfCornersOrientedEdgeCostGenerator, self).register_points(points)
+    def get_edge_cost(self, source_point, target_point):
+        assert len(source_point.coordinates) == 2, "sorry, %s only supports two dimensions" % (self.__class__.__name__,)
+        t_coords = get_average_coordinates([source_point.coordinates, target_point.coordinates])
+        #for ((good_x, good_y), (bad_x, bad_y)) in self.point_pairs:
+            #if t_x >= ((good_x+bad_x)/2) and t_y >= ((good_y+bad_y)/2):
+        multiplier = self._is_point_in_penalty_zone(t_coords) and self.PENALTY_MULTIPLIER or 1
+        dist = distance_between_points(source_point, target_point) * multiplier
+        assert dist >= 0, 'Negative edge cost!'
+        return dist
+
+class ThresholdDistanceFromCornerEdgeCostGenerator(AbstractPairOfCornersOrientedEdgeCostGenerator):
+    THRESHOLD = 0.8
     def _is_point_in_penalty_zone(self, t_coords):
         for good_coords, bad_coords in self.point_pairs:
             for coord_id, t_coord in enumerate(t_coords):
@@ -87,11 +98,36 @@ class ThresholdDistanceFromCornerEdgeCostGenerator(AbstractEdgeCostGenerator):
                 else:
                     assert good_coord != bad_coord, "this isn't really a dimension"
         return True
+
+def distance(a, b):
+    return sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+
+def is_between(a, c, b, epsilon=0):
+    return abs(distance(a, c) + distance(c, b) - distance(a, b)) <= epsilon
+
+class SlantedBlockadeEdgeCostGenerator(AbstractPairOfCornersOrientedEdgeCostGenerator):
+    THRESHOLD = 0.05
+    def register_points(self, points):
+        r = super(SlantedBlockadeEdgeCostGenerator, self).register_points(points)
+        for i, point_pair in enumerate(self.point_pairs):
+            self.point_pairs[i][1] = get_average_coordinates(point_pair)
+        return r  # ?
+    def _is_point_in_penalty_zone(self, t_coords):
+        for good_coords, bad_coords in self.point_pairs:
+            if is_between(good_coords, bad_coords, t_coords, 0.0001):
+                return True
+        return False
     def get_edge_cost(self, source_point, target_point):
         assert len(source_point.coordinates) == 2, "sorry, %s only supports two dimensions" % (self.__class__.__name__,)
-        t_coords = get_average_coordinates([source_point.coordinates, target_point.coordinates])
-        multiplier = self._is_point_in_penalty_zone(t_coords) and self.PENALTY_MULTIPLIER or 1
+        multiplier = (
+            self._is_point_in_penalty_zone(
+                source_point.coordinates
+            )
+            or
+            self._is_point_in_penalty_zone(
+                target_point.coordinates
+            )
+        ) and self.PENALTY_MULTIPLIER or 1
         dist = distance_between_points(source_point, target_point) * multiplier
         assert dist >= 0, 'Negative edge cost!'
         return dist
-

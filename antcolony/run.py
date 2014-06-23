@@ -9,8 +9,8 @@ from periodic_processor import CostInvertingEdgeMutator, CostMultiplierEdgeMutat
 from queen import BasicQueen
 from reality_factory import JsonRealityDeserializer
 from reality_factory import ChessboardRealityFactory, SlightlyRandomizedRealityFactory, SimpleRealityFactory
-from reality_factory import CrossedChessboardRealityFactory, UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory, UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory
-from reality_factory import HexagonRealityFactory, UpperLeftCornerThresholdDistanceHexagonRealityFactory, UpperLeftCornerTrueDistanceHexagonRealityFactory
+from reality_factory import CrossedChessboardRealityFactory, UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory, UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory, UpperLeftCornerBlockadeCrossedChessboardRealityFactory
+from reality_factory import HexagonRealityFactory, UpperLeftCornerThresholdDistanceHexagonRealityFactory, UpperLeftCornerTrueDistanceHexagonRealityFactory, UpperLeftCornerBlockadeHexagonRealityFactory
 from simulation import LastSpawnStepSimulation, MultiSpawnStepSimulation, SpawnStepSimulation, TickStepSimulation
 from simulator import Simulator
 from simulation_director import AnimatingVisualizerSimulationDirector, BasicSimulationDirector, FileDrawingVisualizerSimulationDirector, FileRouteDrawingVisualizerSimulationDirector, ScreenRouteDrawingVisualizerSimulationDirector
@@ -55,10 +55,12 @@ options.generate_worlds = 1    # world generator enabled: create 1 world
 #options.world_type = 'SlightlyRandomized'
 #options.world_type = 'Simple'
 #options.world_type = 'Hexagon'
-options.world_type = 'UpperLeftCornerThresholdDistanceCrossedChessboard'
+#options.world_type = 'UpperLeftCornerThresholdDistanceCrossedChessboard'
 #options.world_type = 'UpperLeftCornerThresholdDistanceHexagon'
 #options.world_type = 'UpperLeftCornerTrueDistanceCrossedChessboard'
 #options.world_type = 'UpperLeftCornerTrueDistanceHexagon'
+#options.world_type = 'UpperLeftCornerBlockadeHexagon'
+options.world_type = 'UpperLeftCornerBlockadeCrossedChessboard'
 
 # number of dimensions
 #options.number_of_dimensions = 1
@@ -139,12 +141,16 @@ if options.generate_worlds>0:
             reality = UpperLeftCornerThresholdDistanceCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='UpperLeftCornerTrueDistanceCrossedChessboard':
             reality = UpperLeftCornerTrueDistanceCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
+        elif options.world_type=='UpperLeftCornerBlockadeCrossedChessboard':
+            reality = UpperLeftCornerBlockadeCrossedChessboardRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=chessboard_size)
         elif options.world_type=='Hexagon':
             reality = HexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
         elif options.world_type=='UpperLeftCornerTrueDistanceHexagon':
             reality = UpperLeftCornerTrueDistanceHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
         elif options.world_type=='UpperLeftCornerThresholdDistanceHexagon':
             reality = UpperLeftCornerThresholdDistanceHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
+        elif options.world_type=='UpperLeftCornerBlockadeHexagon':
+            reality = UpperLeftCornerBlockadeHexagonRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, width=hexagon_board_size)
         elif options.world_type=='Simple':
             reality = SimpleRealityFactory.create_reality(min_pheromone_dropped_by_ant=0, max_pheromone_dropped_by_ant=1, number_of_dimensions=options.number_of_dimensions, number_of_points=number_of_points)
         elif options.world_type=='SlightlyRandomized':

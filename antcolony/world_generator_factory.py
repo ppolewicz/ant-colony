@@ -1,6 +1,6 @@
 from point_generator import SimplePointGenerator, ChessboardPointGenerator, HexagonPointGenerator
 from edge_generator import ChessboardEdgeGenerator, CrossedChessboardEdgeGenerator, LimitedQuantityEdgeGenerator, LimitedRangeEdgeGenerator
-from edge_cost_generator import DistanceEdgeCostGenerator, ThresholdDistanceFromCornerEdgeCostGenerator, TrueDistanceFromCornersEdgeCostGenerator, RandomCoefficientEdgeCostGenerator
+from edge_cost_generator import DistanceEdgeCostGenerator, ThresholdDistanceFromCornerEdgeCostGenerator, TrueDistanceFromCornersEdgeCostGenerator, RandomCoefficientEdgeCostGenerator, SlantedBlockadeEdgeCostGenerator
 from util import Corner
 from world_generator import SimpleWorldGenerator
 
@@ -93,6 +93,11 @@ class UpperLeftCornerThresholdDistanceCrossedChessboardWorldGeneratorFactory(Cro
     def _get_edge_cost_generator(cls):
         return ThresholdDistanceFromCornerEdgeCostGenerator([[Corner.UPPER_LEFT, Corner.LOWER_RIGHT]])
 
+class UpperLeftCornerBlockadeCrossedChessboardWorldGeneratorFactory(CrossedChessboardWorldGeneratorFactory):
+    @classmethod
+    def _get_edge_cost_generator(cls):
+        return SlantedBlockadeEdgeCostGenerator([[Corner.UPPER_LEFT, Corner.LOWER_RIGHT]])
+
 class AbstractHexagonWorldGeneratorFactory(AbstractCustomWidthWorldGeneratorFactory):
     EDGE_GENERATOR_CLASS = LimitedRangeEdgeGenerator
     POINT_GENERATOR_CLASS = HexagonPointGenerator
@@ -114,4 +119,9 @@ class UpperLeftCornerThresholdDistanceHexagonWorldGeneratorFactory(AbstractHexag
     @classmethod
     def _get_edge_cost_generator(cls):
         return ThresholdDistanceFromCornerEdgeCostGenerator([[Corner.UPPER_LEFT, Corner.LOWER_RIGHT]])
+
+class UpperLeftCornerBlockadeHexagonWorldGeneratorFactory(AbstractHexagonWorldGeneratorFactory):
+    @classmethod
+    def _get_edge_cost_generator(cls):
+        return SlantedBlockadeEdgeCostGenerator([[Corner.UPPER_LEFT, Corner.LOWER_RIGHT]])
 
